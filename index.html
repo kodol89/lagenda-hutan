@@ -254,7 +254,7 @@ body:not(.ingame) #act,body:not(.ingame) #acttog{display:none!important}
 <button id="acttog" aria-label="Aksi">›</button>
 <div id="act"><button data-p="fish">🎣<small>Pancing</small></button><button data-p="sit">🪑<small>Duduk</small></button><button data-p="lie">🛌<small>Baring</small></button><button data-p="dance">💃<small>Menari</small></button><button data-p="wave">👋<small>Lambai</small></button></div>
 <button id="sidetog" aria-label="Menu">‹<span id="tdot"></span></button>
-<div id="side"><button id="bag" aria-label="Beg">🎒<span class="dot" id="bagdot"></span></button><button id="home" aria-label="Peta Dunia">🏠</button><button id="party" aria-label="Main Bersama">👥<span id="pdot"></span><span id="cdot"></span></button><button id="setb" aria-label="Tetapan">⚙️</button><button id="profb" aria-label="Profil">🪪</button><button id="rankb" aria-label="Ranking">🏆</button><button id="wardb" aria-label="Kostum">👗</button></div>
+<div id="side"><button id="bag" aria-label="Beg">🎒<span class="dot" id="bagdot"></span></button><button id="home" aria-label="Peta Dunia">🏠</button><button id="party" aria-label="Main Bersama">👥<span id="pdot"></span><span id="cdot"></span></button><button id="setb" aria-label="Tetapan">⚙️</button><button id="profb" aria-label="Profil">🪪</button><button id="rankb" aria-label="Ranking">🏆</button><button id="wardb" aria-label="Kostum">👗</button><button id="devb" aria-label="Developer" style="display:none">🛠️</button></div>
 
 <div id="joy"><div id="knob"></div></div>
 <button id="ctx" aria-label="Tindakan">💬</button>
@@ -795,6 +795,9 @@ const DICT={
 'Multiplayer belum disambung. Tampal pautan':'Multiplayer not connected yet. Paste your','kamu di bawah (contoh:':'link below (example:','Sambung':'Connect','Salin Pautan Jemputan':'Copy Invite Link','Tukar pautan pangkalan data':'Change database link',
 'Tak dapat bersambung ke server Firebase. Semak internet atau pautan pangkalan data.':'Cannot connect to the Firebase server. Check your internet or database link.','Ranking perlukan sambungan Firebase. Tetapkan dalam menu 👥 Main Bersama.':'Ranking needs a Firebase connection. Set it up in the 👥 Play Together menu.',
 'Kongsi pautan game ini kepada kawan.':'Share this game link with friends.','Tekan':'Tap','dan hantar kepada kawan (pautan ini sudah ada sambungan server).':'and send it to friends (it includes the server connection).','Kawan buka pautan dan mula bermain dalam mod Multiplayer.':'Friends open the link and play in Multiplayer mode.',
+'Panel Developer':'Developer Panel','Mod Developer AKTIF':'Developer Mode ON','Mod Developer dimatikan':'Developer Mode off','SUMBER':'RESOURCES','KOSMETIK':'COSMETICS','WATAK':'CHARACTER',
+'Syiling & 💎 +100 Permata':'Coins & 💎 +100 Gems','semua bahan &':'all materials &','Buka semua kostum, rambut & aura':'Unlock all costumes, hair & auras','Naik 10 tahap':'Gain 10 levels','Buka semua peta':'Unlock all maps','Set Mitos penuh':'Full Mythic set','Pulih nyawa penuh':'Full heal',
+'Panel ini hanya kelihatan pada peranti kamu. Ketik lambang di menu utama 7 kali untuk matikan.':'This panel is only visible on your device. Tap the emblem on the main menu 7 times to turn it off.',
 'Gaya Rambut':'Hairstyle','Warna':'Colour','Asal':'Default','Panjang':'Long','Pendek':'Short','Pacak Anime':'Anime Spikes','Ekor Kuda':'Ponytail','Aura Zarah':'Particle Auras','Aura Tenaga Anime':'Anime Energy Auras',
 'Aura Pahlawan Emas':'Golden Warrior Aura','Aura Merah Berganda':'Crimson Surge','Naluri Perak':'Silver Instinct','Musang Ekor Sembilan':'Nine-Tailed Fox','Gergasi Ungu':'Purple Giant','Geser untuk pusing':'Swipe to rotate','Ketik untuk serang':'Tap to attack',
 'Profil Wira':'Hero Profile','KUASA TEMPUR':'COMBAT POWER','Set Mitos Penuh':'Full Mythic Set','Kuasa serangan':'Attack power','Peluang kritikal':'Critical chance','Nyawa maksimum':'Max health','Kelajuan gerak':'Move speed',
@@ -894,7 +897,7 @@ const icon=(n,cls)=>`<svg class="ic ${cls||''}" viewBox="0 0 24 24" fill="none" 
 const ATKIC={warrior:'swords',mage:'staff',archer:'bow'};
 function decorate(){
   const put=(id,ic,v)=>{const b=$(id);const sp=[...b.querySelectorAll('span')];b.innerHTML=icon(ic);sp.forEach(x=>b.appendChild(x));b.classList.add('fxb');if(v)b.classList.add(v)};
-  put('bag','bag');put('home','home');put('party','users');put('setb','gear');put('profb','user');put('rankb','trophy');put('wardb','shirt');
+  put('bag','bag');put('home','home');put('party','users');put('setb','gear');put('profb','user');put('rankb','trophy');put('wardb','shirt');put('devb','gear');
   for(const b of $('act').children){const sm=b.querySelector('small');b.innerHTML=icon({fish:'rod',sit:'chair',lie:'bed',dance:'music',wave:'hand'}[b.dataset.p]);b.appendChild(sm);b.classList.add('fxb','teal')}
   $('atk').classList.add('fxb','red');['s1','s2','s3'].forEach(i=>$(i).classList.add('fxb','vio'));$('ctx').classList.add('fxb','blue');
   $('sidetog').classList.add('fxt');$('acttog').classList.add('fxt');
@@ -1014,6 +1017,7 @@ function renderModal(){
   }else if(modalKind==='rank'){h=rankHTML()
   }else if(modalKind==='ward'){h=wardHTML()
   }else if(modalKind==='prof'){h=profHTML()
+  }else if(modalKind==='dev'){h=devHTML()
   }else if(modalKind==='smith'){h=smithHTML()
   }else if(modalKind==='settings'){h=settingsHTML()
   }else if(modalKind==='help'){h=helpHTML()
@@ -1053,6 +1057,7 @@ modal.addEventListener('click',e=>{
   if(a==='orient'){SET.orient=id==='land'?'land':'auto';ORIENT=SET.orient;saveSet();resize();applySettings()}
   if(a==='jreset'){Object.assign(SET,{jside:'left',jsize:1,jx:0,jy:0});saveSet();applySettings()}
   if(a==='tomenu'){backToMenu();return}
+  if(a[0]==='d'&&modalKind==='dev'&&devOn&&devAct(a)){renderModal();return}
   if(a==='fbset'){const el=document.getElementById('fbin'),v=(el&&el.value||'').trim().replace(/\/$/,'');if(/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/i.test(v)){LHB_FB.set(v);save();location.reload()}else toast('⚠️ Pautan tak sah. Mesti bermula https:// dan berakhir .firebasedatabase.app atau .firebaseio.com');return}
   if(a==='fbclear'){LHB_FB.clear();save();location.reload();return}
   if(a==='fbcopy'){const link=location.origin+location.pathname+'?db='+encodeURIComponent(LHB_FB.url());const done=()=>toast('✅ Pautan jemputan disalin!');if(navigator.share)navigator.share({title:'Lagenda Hutan Belantara',text:'Jom main sama!',url:link}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(link).then(done,()=>prompt('Salin pautan ini:',link));else prompt('Salin pautan ini:',link);return}
@@ -1120,6 +1125,7 @@ $('stats').addEventListener('click',()=>{if(started&&!modalKind)quickHeal()});
 $('setb').addEventListener('pointerdown',e=>{e.preventDefault();openModal('settings')});
 $('rankb').addEventListener('pointerdown',e=>{e.preventDefault();openModal('rank')});
 $('profb').addEventListener('pointerdown',e=>{e.preventDefault();pvFx=[];openModal('prof')});
+$('devb').addEventListener('pointerdown',e=>{e.preventDefault();if(devOn)openModal('dev')});
 $('wardb').addEventListener('pointerdown',e=>{e.preventDefault();wardTry=null;pvFx=[];openModal('ward')});
 let sideT=0;const sideEl=$('side');
 function sideOpen(o){sideEl.classList.toggle('open',o);$('sidetog').firstChild.textContent=o?'›':'‹';sideT=o?5:0}
@@ -2492,6 +2498,29 @@ function drawProfPreview(dt){if(modalKind!=='prof')return;const cv2=document.get
   wc.fillStyle='rgba(255,217,121,.18)';wc.beginPath();wc.ellipse(140,268,70,14,0,0,TAU);wc.fill();
   wc.setTransform(3.2,0,0,3.2,140,268);try{drawHero(pvHero);for(const p of pvFx){ctx.globalAlpha=Math.max(0,p.life/p.max);circ(p.x,p.y,p.size,p.col)}ctx.globalAlpha=1}finally{ctx=sv}}
 
+/* ================= DEVELOPER MODE ================= */
+let devOn=false;try{devOn=localStorage.getItem('lhb_dev')==='1'}catch(e){}
+let devTaps=[];
+function devApplyBtn(){const b=document.getElementById('devb');if(b)b.style.display=devOn?'':'none'}
+document.querySelector('#menu .emb').addEventListener('pointerdown',()=>{const t=Date.now();devTaps=devTaps.filter(x=>t-x<3000);devTaps.push(t);
+  if(devTaps.length>=7){devTaps=[];devOn=!devOn;try{localStorage.setItem('lhb_dev',devOn?'1':'0')}catch(e){}devApplyBtn();toast(devOn?'🛠️ Mod Developer AKTIF':'Mod Developer dimatikan');beep(devOn?1400:500,.12,'square',.05)}});
+function devHTML(){return `<h3>🛠️ Panel Developer<button class="x" data-a="close">✕</button></h3>
+  <div class="chips"><span class="chip" style="color:#ffd979">🪙 ${res.coin}</span><span class="chip">💎 ${res.permata}</span><span class="chip">Tahap ${hero.lvl}</span></div>
+  <div class="sec">SUMBER</div><button class="btn g big" data-a="dcoin">🪙 +10,000 Syiling & 💎 +100 Permata</button><button class="btn d big" data-a="dres">🪵 +200 semua bahan & 🧪 +20 ubat</button>
+  <div class="sec">KOSMETIK</div><button class="btn g big" data-a="dward">👗 Buka semua kostum, rambut & aura</button>
+  <div class="sec">WATAK</div><button class="btn d big" data-a="dlvl">⬆️ Naik 10 tahap</button><button class="btn d big" data-a="dmaps">🗺️ Buka semua peta</button><button class="btn d big" data-a="dmyth">🔥 Set Mitos penuh</button><button class="btn d big" data-a="dheal">❤️ Pulih nyawa penuh</button>
+  <div class="note" style="margin-top:10px">Panel ini hanya kelihatan pada peranti kamu. Ketik lambang di menu utama 7 kali untuk matikan.</div>`}
+function devAct(a){
+  if(a==='dcoin'){res.coin+=10000;res.permata+=100}
+  else if(a==='dres'){for(const k of['kayu','batu','besi','gel','ikan'])res[k]+=200;res.ubat+=20;res.ubatB+=10}
+  else if(a==='dward'){const all=[...Object.values(COSTUMES).flat(),...UNI,...HAIRS,...HAIRSTY,...AURAS].map(o=>o.id);wardrobe.own=[...new Set([...wardrobe.own,...all])]}
+  else if(a==='dlvl'){hero.lvl+=10;hero.xp=0;recalc();hero.hp=ST.maxHp}
+  else if(a==='dmaps'){for(let k=0;k<bossDown.length;k++)bossDown[k]=Math.max(1,bossDown[k]||0);hero.lvl=Math.max(hero.lvl,MAPS[MAPS.length-1].lv);recalc();hero.hp=ST.maxHp}
+  else if(a==='dmyth'){const T=Math.max(craftTier(),Math.min(12,1+Math.floor(hero.lvl/6)));for(const s of SLOTS)eq[s]=makeItem(s,3,T);recalc();hero.hp=ST.maxHp}
+  else if(a==='dheal'){hero.hp=ST.maxHp}
+  else return false;
+  sfx.get();save();return true}
+
 /* ================= CHARACTER CREATION ================= */
 const pvc=$('pv'),pctx=pvc.getContext('2d');let pvFace=0;
 const pvHero={x:0,y:0,face:'down',walkT:0,moving:true,atkT:0,spinT:0,aim:0,inv:0,dead:false};
@@ -2513,7 +2542,7 @@ function beginGame(d){
   hero.inv=1;setTimeout(()=>banner(`${M.ic} ${M.n}`,d?'Selamat kembali!':'Bercakap dengan Tok Penghulu',2.8),300);save();
 }
 
-decorate();genMap(0);setWeather('malam',true);renderMenu();applySettings();applyStatic();
+decorate();devApplyBtn();genMap(0);setWeather('malam',true);renderMenu();applySettings();applyStatic();
 let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;lastDt=dt;try{update(dt);draw();drawPreview(dt);drawWardPreview(dt);drawProfPreview(dt);drawEnding(dt)}catch(e){console.error(e)}requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
