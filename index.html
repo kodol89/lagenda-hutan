@@ -313,7 +313,7 @@ body:not(.ingame) #act,body:not(.ingame) #acttog{display:none!important}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>/* ===== Standalone multiplayer/ranking via Firebase Realtime Database ===== */
 (function(){
-  const FB_URL_BUILTIN='';
+  const FB_URL_BUILTIN='https://lagenda-hutan-belantara-default-rtdb.asia-southeast1.firebasedatabase.app';
   try{const q=new URLSearchParams(location.search).get('db');if(q&&/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)\/?$/i.test(q))localStorage.setItem('lhb_fburl',q.replace(/\/$/,''))}catch(e){}
   const url=()=>{try{return FB_URL_BUILTIN||localStorage.getItem('lhb_fburl')||''}catch(e){return FB_URL_BUILTIN}};
   window.LHB_FB={url,set(u){try{localStorage.setItem('lhb_fburl',u)}catch(e){}},clear(){try{localStorage.removeItem('lhb_fburl')}catch(e){}},builtin:!!FB_URL_BUILTIN};
