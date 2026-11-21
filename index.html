@@ -342,6 +342,9 @@ body:not(.ingame) #act,body:not(.ingame) #acttog{display:none!important}
 <script>
 (()=>{
 const cv=document.getElementById('c');let ctx=cv.getContext('2d');
+/* Shadow blur is very slow on mobile Safari: disable it on touch devices */
+const MOBILE=(navigator.maxTouchPoints||0)>0||'ontouchstart' in window;
+if(MOBILE){try{const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');Object.defineProperty(CanvasRenderingContext2D.prototype,'shadowBlur',{configurable:true,get(){return d.get.call(this)},set(v){d.set.call(this,0)}})}catch(e){}}
 let W,H,DPR,Z,vig,QLV=0;const QSC=[1,.78,.62,.5];
 let ORIENT='auto',ROT=false;
 function resize(){
@@ -2566,7 +2569,7 @@ function devHTML(){return `<h3>🛠️ Panel Developer<button class="x" data-a="
   <div class="chips"><span class="chip" style="color:#ffd979">🪙 ${res.coin}</span><span class="chip">💎 ${res.permata}</span><span class="chip">Tahap ${hero.lvl}</span></div>
   <div class="sec">SUMBER</div><button class="btn g big" data-a="dcoin">🪙 +10,000 Syiling & 💎 +100 Permata</button><button class="btn d big" data-a="dres">🪵 +200 semua bahan & 🧪 +20 ubat</button>
   <div class="sec">KOSMETIK</div><button class="btn g big" data-a="dward">👗 Buka semua kostum, rambut & aura</button>
-  <div class="sec">WATAK</div><button class="btn d big" data-a="dlvl">⬆️ Naik 10 tahap</button><button class="btn d big" data-a="dmaps">🗺️ Buka semua peta</button><button class="btn d big" data-a="dmyth">🔥 Set Mitos penuh</button><button class="btn d big" data-a="dheal">❤️ Pulih nyawa penuh</button>
+  <div class="sec">WATAK</div><button class="btn d big" data-a="dlvl">⬆️ Naik 10 tahap</button><button class="btn d big" data-a="dmaps">🗺️ Buka semua peta</button><button class="btn d big" data-a="dmyth">🔥 Set Mitos penuh</button><button class="btn d big" data-a="dheal">❤️ Pulih nyawa penuh</button><div class="sec">PRESTASI</div><button class="btn d big" data-a="dfps">📊 ${SHOWFPS?'Sembunyi':'Papar'} FPS</button>
   <div class="note" style="margin-top:10px">Panel ini hanya kelihatan pada peranti kamu. Ketik lambang di menu utama 7 kali untuk matikan.</div>`}
 function devAct(a){
   if(a==='dcoin'){res.coin+=10000;res.permata+=100}
@@ -2576,6 +2579,7 @@ function devAct(a){
   else if(a==='dmaps'){for(let k=0;k<bossDown.length;k++)bossDown[k]=Math.max(1,bossDown[k]||0);hero.lvl=Math.max(hero.lvl,MAPS[MAPS.length-1].lv);recalc();hero.hp=ST.maxHp}
   else if(a==='dmyth'){const T=Math.max(craftTier(),Math.min(12,1+Math.floor(hero.lvl/6)));for(const s of SLOTS)eq[s]=makeItem(s,3,T);recalc();hero.hp=ST.maxHp}
   else if(a==='dheal'){hero.hp=ST.maxHp}
+  else if(a==='dfps'){SHOWFPS=!SHOWFPS;try{localStorage.setItem('lhb_fps',SHOWFPS?'1':'0')}catch(e){}}
   else return false;
   sfx.get();save();return true}
 
@@ -2602,11 +2606,13 @@ function beginGame(d){
 
 decorate();devApplyBtn();genMap(0);setWeather('malam',true);renderMenu();applySettings();applyStatic();
 let last=performance.now();
-const PERF={t:0,n:0,good:0};
+const PERF={t:0,n:0,good:0};let SHOWFPS=false;try{SHOWFPS=localStorage.getItem('lhb_fps')==='1'}catch(e){}const FPSV={t:0,n:0,v:60,w:0,worst:0};
+function fpsTick(raw){FPSV.t+=raw;FPSV.n++;FPSV.w=Math.max(FPSV.w,raw);if(FPSV.t>=1){FPSV.v=Math.round(FPSV.n/FPSV.t);FPSV.worst=Math.round(FPSV.w*1000);FPSV.t=0;FPSV.n=0;FPSV.w=0}
+  if(SHOWFPS){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(W/2-80,4,160,20);ctx.fillStyle=FPSV.v<40?'#ff6a5a':'#7dff9a';ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${FPSV.v} FPS · max ${FPSV.worst}ms · Q${QLV}`,W/2,14)}}
 function perfTick(raw){if(document.hidden||raw>.25)return;PERF.t+=raw;PERF.n++;if(PERF.t<2)return;const avg=PERF.t/PERF.n;PERF.t=0;PERF.n=0;
   if(avg>.024&&QLV<QSC.length-1){QLV++;PERF.good=0;resize()}
   else if(avg<.0175&&QLV>0){if(++PERF.good>=4){QLV--;PERF.good=0;resize()}}else PERF.good=0}
-function loop(now){const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;lastDt=dt;perfTick(raw);try{update(dt);draw();drawPreview(dt);drawWardPreview(dt);drawProfPreview(dt);drawEnding(dt)}catch(e){console.error(e)}requestAnimationFrame(loop)}
+function loop(now){const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;lastDt=dt;perfTick(raw);try{update(dt);draw();fpsTick(raw);drawPreview(dt);drawWardPreview(dt);drawProfPreview(dt);drawEnding(dt)}catch(e){console.error(e)}requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 window.__g={hero,get res(){return res},get inv(){return inv},get eq(){return eq},get quest(){return quest},setQuest,set baseLv(v){baseLv=v;recalc()},makeItem,addItem,equip,recalc,openModal,travel,
