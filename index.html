@@ -256,7 +256,7 @@ body:not(.ingame) #act,body:not(.ingame) #acttog{display:none!important}
 <button id="acttog" aria-label="Aksi">›</button>
 <div id="act"><button data-p="fish">🎣<small>Pancing</small></button><button data-p="sit">🪑<small>Duduk</small></button><button data-p="lie">🛌<small>Baring</small></button><button data-p="dance">💃<small>Menari</small></button><button data-p="wave">👋<small>Lambai</small></button></div>
 <button id="sidetog" aria-label="Menu">‹<span id="tdot"></span></button>
-<div id="side"><button id="bag" aria-label="Beg">🎒<span class="dot" id="bagdot"></span></button><button id="home" aria-label="Peta Dunia">🏠</button><button id="party" aria-label="Main Bersama">👥<span id="pdot"></span><span id="cdot"></span></button><button id="setb" aria-label="Tetapan">⚙️</button><button id="profb" aria-label="Profil">🪪</button><button id="rankb" aria-label="Ranking">🏆</button><button id="wardb" aria-label="Kostum">👗</button><button id="devb" aria-label="Developer" style="display:none">🛠️</button></div>
+<div id="side"><button id="bag" aria-label="Beg">🎒<span class="dot" id="bagdot"></span></button><button id="home" aria-label="Peta Dunia">🏠</button><button id="party" aria-label="Main Bersama">👥<span id="pdot"></span><span id="cdot"></span></button><button id="devb" aria-label="Developer" style="display:none">🛠️</button><button id="setb" aria-label="Tetapan">⚙️</button><button id="profb" aria-label="Profil">🪪</button><button id="rankb" aria-label="Ranking">🏆</button><button id="wardb" aria-label="Kostum">👗</button></div>
 
 <div id="joy"><div id="knob"></div></div>
 <button id="ctx" aria-label="Tindakan">💬</button>
@@ -802,7 +802,7 @@ const DICT={
 'KAWAN SAYA':'MY FRIENDS','KOD KAWAN KAMU':'YOUR FRIEND CODE','Salin':'Copy','Kod kawan: AB12-CD34':'Friend code: AB12-CD34','Permintaan kawan baru':'New friend requests','Menunggu jawapan:':'Waiting for reply:',
 'Permintaan akan sampai bila kawan itu dalam talian.':'The request is delivered when that player is online.','Batal':'Cancel','Dalam talian':'Online','Luar talian':'Offline','Sertai':'Join',
 'Belum ada kawan. Tekan ➕ pada pemain dalam talian, atau kongsi kod kawan kamu.':'No friends yet. Tap ➕ on an online player, or share your friend code.',
-'Panel Developer':'Developer Panel','Mod Developer AKTIF':'Developer Mode ON','Mod Developer dimatikan':'Developer Mode off','SUMBER':'RESOURCES','KOSMETIK':'COSMETICS','WATAK':'CHARACTER',
+'Panel Developer':'Developer Panel','Buka Panel Developer':'Open Developer Panel','Mod Developer AKTIF':'Developer Mode ON','Mod Developer dimatikan':'Developer Mode off','SUMBER':'RESOURCES','KOSMETIK':'COSMETICS','WATAK':'CHARACTER',
 'Syiling & 💎 +100 Permata':'Coins & 💎 +100 Gems','semua bahan &':'all materials &','Buka semua kostum, rambut & aura':'Unlock all costumes, hair & auras','Naik 10 tahap':'Gain 10 levels','Buka semua peta':'Unlock all maps','Set Mitos penuh':'Full Mythic set','Pulih nyawa penuh':'Full heal',
 'Panel ini hanya kelihatan pada peranti kamu. Ketik lambang di menu utama 7 kali untuk matikan.':'This panel is only visible on your device. Tap the emblem on the main menu 7 times to turn it off.',
 'Gaya Rambut':'Hairstyle','Warna':'Colour','Asal':'Default','Panjang':'Long','Pendek':'Short','Pacak Anime':'Anime Spikes','Ekor Kuda':'Ponytail','Aura Zarah':'Particle Auras','Aura Tenaga Anime':'Anime Energy Auras',
@@ -869,6 +869,7 @@ const DICT={
 };
 /* ================= ICONS ================= */
 const ICP={
+wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3.5 17.2a1.8 1.8 0 0 0 2.5 2.5l5.8-5.8a4 4 0 0 0 5.1-5.4l-2.6 2.6-2.2-.4-.4-2.2z"/>',
 shirt:'<path d="M8.5 3.5 4 6l-2 5 3.2 1.4L6.5 10v10.5h11V10l1.3 2.4L22 11l-2-5-4.5-2.5c-.6 1.6-2 2.5-3.5 2.5S9.1 5.1 8.5 3.5z"/>',
 play:'<path d="M8 4.5l11.5 7.5L8 19.5z" fill="currentColor"/>',
 spark:'<path d="M11 2.5l2 5.6 5.6 2-5.6 2-2 5.6-2-5.6-5.6-2 5.6-2z"/><path d="M18.5 14.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z"/>',
@@ -904,7 +905,7 @@ const icon=(n,cls)=>`<svg class="ic ${cls||''}" viewBox="0 0 24 24" fill="none" 
 const ATKIC={warrior:'swords',mage:'staff',archer:'bow'};
 function decorate(){
   const put=(id,ic,v)=>{const b=$(id);const sp=[...b.querySelectorAll('span')];b.innerHTML=icon(ic);sp.forEach(x=>b.appendChild(x));b.classList.add('fxb');if(v)b.classList.add(v)};
-  put('bag','bag');put('home','home');put('party','users');put('setb','gear');put('profb','user');put('rankb','trophy');put('wardb','shirt');put('devb','gear');
+  put('bag','bag');put('home','home');put('party','users');put('setb','gear');put('profb','user');put('rankb','trophy');put('wardb','shirt');put('devb','wrench');
   for(const b of $('act').children){const sm=b.querySelector('small');b.innerHTML=icon({fish:'rod',sit:'chair',lie:'bed',dance:'music',wave:'hand'}[b.dataset.p]);b.appendChild(sm);b.classList.add('fxb','teal')}
   $('atk').classList.add('fxb','red');['s1','s2','s3'].forEach(i=>$(i).classList.add('fxb','vio'));$('ctx').classList.add('fxb','blue');
   $('sidetog').classList.add('fxt');$('acttog').classList.add('fxt');
@@ -1026,7 +1027,7 @@ function renderModal(){
   }else if(modalKind==='prof'){h=profHTML()
   }else if(modalKind==='dev'){h=devHTML()
   }else if(modalKind==='smith'){h=smithHTML()
-  }else if(modalKind==='settings'){h=settingsHTML()
+  }else if(modalKind==='settings'){h=settingsHTML()+(devOn?'<div class="sec">DEVELOPER</div><button class="btn g big" data-a="opendev">🛠️ Buka Panel Developer</button>':'')
   }else if(modalKind==='help'){h=helpHTML()
   }else if(modalKind==='map'){
     h=`<h3>🗺️ Peta Dunia<button class="x" data-a="close">✕</button></h3>`;
@@ -1065,6 +1066,7 @@ modal.addEventListener('click',e=>{
   if(a==='jreset'){Object.assign(SET,{jside:'left',jsize:1,jx:0,jy:0});saveSet();applySettings()}
   if(a==='tomenu'){backToMenu();return}
   if(a[0]==='d'&&modalKind==='dev'&&devOn&&devAct(a)){renderModal();return}
+  if(a==='opendev'){openModal('dev');return}
   if(a[0]==='f'&&friendAct(a,id))return;
   if(a==='fbset'){const el=document.getElementById('fbin'),v=(el&&el.value||'').trim().replace(/\/$/,'');if(/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/i.test(v)){LHB_FB.set(v);save();location.reload()}else toast('⚠️ Pautan tak sah. Mesti bermula https:// dan berakhir .firebasedatabase.app atau .firebaseio.com');return}
   if(a==='fbclear'){LHB_FB.clear();save();location.reload();return}
