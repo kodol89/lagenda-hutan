@@ -218,6 +218,7 @@ body:not(.ingame) #act,body:not(.ingame) #acttog{display:none!important}
 .wcard{border:2px solid rgba(255,255,255,.1);border-radius:11px;padding:7px 4px;text-align:center;background:rgba(0,0,0,.3);cursor:pointer}
 .wsec{grid-column:1/-1;font-weight:900;font-size:12px;color:#ffd979;margin:6px 0 0;letter-spacing:.5px}
 #ppv,#wpv{touch-action:none;cursor:grab}.pvhint{display:block;text-align:center;font-size:10px;opacity:.6;margin-top:2px}
+.fcode{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(255,200,80,.2),rgba(120,60,10,.25));border:1px solid rgba(255,217,121,.5)}.fcode small{display:block;font-size:9.5px;letter-spacing:1.5px;opacity:.8}.fcode b{font:900 20px Cinzel,serif;color:#ffe08a;letter-spacing:2px}
 .wcard.on{border-color:#ffd979;background:rgba(243,210,122,.14)}
 .wcard b{display:block;font-size:11px;line-height:1.2;margin-top:4px}
 .wcard small{display:block;font-size:10px;opacity:.8;margin-top:2px}
@@ -795,6 +796,9 @@ const DICT={
 'Multiplayer belum disambung. Tampal pautan':'Multiplayer not connected yet. Paste your','kamu di bawah (contoh:':'link below (example:','Sambung':'Connect','Salin Pautan Jemputan':'Copy Invite Link','Tukar pautan pangkalan data':'Change database link',
 'Tak dapat bersambung ke server Firebase. Semak internet atau pautan pangkalan data.':'Cannot connect to the Firebase server. Check your internet or database link.','Ranking perlukan sambungan Firebase. Tetapkan dalam menu 👥 Main Bersama.':'Ranking needs a Firebase connection. Set it up in the 👥 Play Together menu.',
 'Kongsi pautan game ini kepada kawan.':'Share this game link with friends.','Tekan':'Tap','dan hantar kepada kawan (pautan ini sudah ada sambungan server).':'and send it to friends (it includes the server connection).','Kawan buka pautan dan mula bermain dalam mod Multiplayer.':'Friends open the link and play in Multiplayer mode.',
+'KAWAN SAYA':'MY FRIENDS','KOD KAWAN KAMU':'YOUR FRIEND CODE','Salin':'Copy','Kod kawan: AB12-CD34':'Friend code: AB12-CD34','Permintaan kawan baru':'New friend requests','Menunggu jawapan:':'Waiting for reply:',
+'Permintaan akan sampai bila kawan itu dalam talian.':'The request is delivered when that player is online.','Batal':'Cancel','Dalam talian':'Online','Luar talian':'Offline','Sertai':'Join',
+'Belum ada kawan. Tekan ➕ pada pemain dalam talian, atau kongsi kod kawan kamu.':'No friends yet. Tap ➕ on an online player, or share your friend code.',
 'Panel Developer':'Developer Panel','Mod Developer AKTIF':'Developer Mode ON','Mod Developer dimatikan':'Developer Mode off','SUMBER':'RESOURCES','KOSMETIK':'COSMETICS','WATAK':'CHARACTER',
 'Syiling & 💎 +100 Permata':'Coins & 💎 +100 Gems','semua bahan &':'all materials &','Buka semua kostum, rambut & aura':'Unlock all costumes, hair & auras','Naik 10 tahap':'Gain 10 levels','Buka semua peta':'Unlock all maps','Set Mitos penuh':'Full Mythic set','Pulih nyawa penuh':'Full heal',
 'Panel ini hanya kelihatan pada peranti kamu. Ketik lambang di menu utama 7 kali untuk matikan.':'This panel is only visible on your device. Tap the emblem on the main menu 7 times to turn it off.',
@@ -1058,6 +1062,7 @@ modal.addEventListener('click',e=>{
   if(a==='jreset'){Object.assign(SET,{jside:'left',jsize:1,jx:0,jy:0});saveSet();applySettings()}
   if(a==='tomenu'){backToMenu();return}
   if(a[0]==='d'&&modalKind==='dev'&&devOn&&devAct(a)){renderModal();return}
+  if(a[0]==='f'&&friendAct(a,id))return;
   if(a==='fbset'){const el=document.getElementById('fbin'),v=(el&&el.value||'').trim().replace(/\/$/,'');if(/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/i.test(v)){LHB_FB.set(v);save();location.reload()}else toast('⚠️ Pautan tak sah. Mesti bermula https:// dan berakhir .firebasedatabase.app atau .firebaseio.com');return}
   if(a==='fbclear'){LHB_FB.clear();save();location.reload();return}
   if(a==='fbcopy'){const link=location.origin+location.pathname+'?db='+encodeURIComponent(LHB_FB.url());const done=()=>toast('✅ Pautan jemputan disalin!');if(navigator.share)navigator.share({title:'Lagenda Hutan Belantara',text:'Jom main sama!',url:link}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(link).then(done,()=>prompt('Salin pautan ini:',link));else prompt('Salin pautan ini:',link);return}
@@ -2085,7 +2090,7 @@ function drawSmith(){if(!SMITH)return;const x=SMITH.x,y=SMITH.y,ph=(time*.9)%1,s
 })(0);
 function sendPresence(){if(!ROOM||!started||SET.mode==='solo')return;
   const P={n:nick||(gender==='f'?'Wirawati':'Wira'),c:cls,g:gender,l:hero.lvl,m:mapIdx,x:Math.round(hero.x),y:Math.round(hero.y),f:hero.face,mv:hero.moving?1:0,am:Math.round(hero.aim*100)/100,
-    as:atkSeq,sk:skSeq,ski:lastSk,e:SLOTS.map(s=>eq[s]?eq[s].rar:-1),hp:Math.round(hero.hp),mh:ST.maxHp,d:hero.dead?1:0,bd:Math.round(myBossDmg),em:emote,ch:myChat,po:hero.pose||0,cs:wardrobe.cos[cls],hr:wardrobe.hair,fx:wardrobe.fx,hs:wardrobe.hs};
+    as:atkSeq,sk:skSeq,ski:lastSk,e:SLOTS.map(s=>eq[s]?eq[s].rar:-1),hp:Math.round(hero.hp),mh:ST.maxHp,d:hero.dead?1:0,bd:Math.round(myBossDmg),em:emote,ch:myChat,po:hero.pose||0,cs:wardrobe.cos[cls],hr:wardrobe.hair,fx:wardrobe.fx,hs:wardrobe.hs,u:PID,rq:fpend.slice(0,10),ac:friends.slice(0,40).map(f=>f.u)};
   ROOM.presence({p:P}).catch(()=>{})}
 function tickRemotes(dt){
   if(SET.mode==='solo'){for(const k in remotes)delete remotes[k];return}
@@ -2095,7 +2100,7 @@ function tickRemotes(dt){
     let Q=remotes[pe.peer];const isNew=!Q,tx=+P.x||0,ty=+P.y||0,m0=+P.m|0,m=(m0===AI||(m0>=0&&m0<MAPS.length))?m0:0;
     if(!Q)Q=remotes[pe.peer]={x:tx,y:ty,walkT:0,atkT:0,spinT:0,inv:0,dead:false,face:'down',aim:0,lastAs:P.as,lastSk:P.sk,lastBd:+P.bd||0,lastM:m,emT:0,emTs:P.em&&P.em.ts};
     Q.n=String(P.n||'Kawan').replace(/[\u0000-\u001f]/g,'').slice(0,14);Q.cls=CLASSES[P.c]?P.c:'warrior';Q.g=P.g==='f'?'f':'m';Q.m=m;Q.l=clamp(+P.l|0,1,999);
-    Q.hp=+P.hp||0;Q.mh=Math.max(1,+P.mh||1);Q.e=Array.isArray(P.e)?P.e.slice(0,6).map(v=>clamp(v|0,-1,3)):[];guest=pe.guest;
+    Q.hp=+P.hp||0;Q.mh=Math.max(1,+P.mh||1);Q.e=Array.isArray(P.e)?P.e.slice(0,6).map(v=>clamp(v|0,-1,3)):[];guest=pe.guest;Q.u=typeof P.u==='string'&&PIDRE.test(P.u)?P.u:'';Q.rq=fArr(P.rq);Q.ac=fArr(P.ac);
     if(Array.isArray(P.ch))for(const cm of P.ch.slice(-6)){if(!cm||typeof cm!=='object')continue;const key=pe.peer+':'+(cm.i|0);if(seenChat.has(key))continue;seenChat.add(key);const t=clean(cm.t||'').slice(0,100);if(!t)continue;
       chatLog.push({n:Q.n,t,me:0});if(chatLog.length>60)chatLog.shift();if(!isNew){Q.say={t,T:4.5};if(modalKind!=='party'){unread++;toast(`💬 ${Q.n}: ${t}`)}beep(1200,.05,'sine',.03)}renderChatList()}
     if(Q.say){Q.say.T-=dt;if(Q.say.T<=0)Q.say=null}
@@ -2112,13 +2117,14 @@ function tickRemotes(dt){
     if(P.em&&typeof P.em==='object'&&P.em.ts!==Q.emTs){Q.emTs=P.em.ts;if(EMOTES.includes(P.em.e)){Q.em=P.em.e;Q.emT=3.5}}
   }
   for(const id in remotes)if(!seen[id])delete remotes[id];
+  friendTick();
 }
 let guest=false;
 function bubble(x,y,e){ctx.fillStyle='rgba(255,255,255,.95)';rr(ctx,x-15,y-15,30,26,9);ctx.fill();ctx.beginPath();ctx.moveTo(x-4,y+11);ctx.lineTo(x,y+17);ctx.lineTo(x+4,y+11);ctx.fill();ctx.font='18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(e,x,y-2)}
 function drawRemote(Q){
   const sc=cls,sg=gender,se=eq;cls=Q.cls;gender=Q.g;const fe={};SLOTS.forEach((s,k)=>{fe[s]=Q.e[k]>=0?{rar:Q.e[k]}:null});eq=fe;wardOverride={cos:Q.cs,hair:Q.hr,hs:Q.hs,fx:Q.fx};
   ctx.save();if(Q.dead)ctx.globalAlpha=.4;try{drawHero(Q)}finally{cls=sc;gender=sg;eq=se;wardOverride=null;ctx.restore()}
-  const y=Q.y-(Q.cls==='mage'?84:68);label(Q.x,y,`${CLASSES[Q.cls].ic} ${Q.n} · ${tr('Tp')} ${Q.l}`,'#9ff3ff',1);
+  const y=Q.y-(Q.cls==='mage'?84:68);const isF=isFriend(Q.u);label(Q.x,y,`${isF?'⭐ ':''}${CLASSES[Q.cls].ic} ${Q.n} · ${tr('Tp')} ${Q.l}`,isF?'#ffd979':'#9ff3ff',1);
   ctx.fillStyle='rgba(0,0,0,.55)';rr(ctx,Q.x-17,y+7,34,4,2);ctx.fill();ctx.fillStyle='#5fe08a';rr(ctx,Q.x-16.5,y+7.5,33*clamp(Q.hp/Q.mh,0,1),3,1.5);ctx.fill();
   if(Q.emT>0&&Q.em)bubble(Q.x,y-22,Q.em);if(Q.say)sayBubble(Q.x,y-(Q.emT>0?44:12),Q.say.t)}
 function partyHTML(){
@@ -2127,14 +2133,63 @@ function partyHTML(){
   if(roomOk===null)h+='<div class="note">⏳ Sedang menyambung...</div>';
   else if(!ROOM)h+=LHB_FB.url()?'<div class="note">⚠️ Tak dapat bersambung ke server Firebase. Semak internet atau pautan pangkalan data.</div>'+(LHB_FB.builtin?'':'<button class="btn d big" data-a="fbclear">Tukar pautan pangkalan data</button>'):'<div class="note">🔌 Multiplayer belum disambung. Tampal pautan <b>Firebase Realtime Database</b> kamu di bawah (contoh: https://nama-game-default-rtdb.asia-southeast1.firebasedatabase.app)</div><input class="inp" id="fbin" placeholder="https://....firebasedatabase.app"><button class="btn g big" data-a="fbset">🔗 Sambung</button>';
   else h+=`<div class="note">🟢 Dalam talian · ${list.length?list.length+' kawan sedang bermain':'belum ada kawan dalam talian'}</div>`;
+  if(ROOM)h+=friendsHTML();
   h+=`<div class="sec">💬 SEMBANG</div><div id="chatlist"></div><div class="chatrow"><input class="inp" id="chatin" maxlength="100" placeholder="Tulis mesej..." ${ROOM?'':'disabled'}><button class="btn g" data-a="chat" ${ROOM?'':'disabled'}>Hantar</button></div><div class="chips" style="margin-top:6px">${QUICK.map(q=>`<button class="btn d" data-a="qchat" data-id="${q}" ${ROOM?'':'disabled'}>${q}</button>`).join('')}</div>`;
   h+=`<div class="sec">EMOSI</div><div class="chips">${EMOTES.map(e=>`<button class="btn d" style="font-size:21px;padding:6px 9px" data-a="emo" data-id="${e}">${e}</button>`).join('')}</div>`;
   h+=`<div class="sec">PEMAIN DALAM TALIAN (${list.length})</div>`;
-  h+=list.length?list.map(Q=>{const M2=Q.m===AI?ARENA_DEF:MAPS[Q.m],ok=Q.m<MAPS.length&&Q.m!==mapIdx&&canEnter(Q.m);return `<div class="mrow ${Q.m===mapIdx?'cur':''}"><div class="mi">${CLASSES[Q.cls].ic}</div><div class="mt"><b>${U(Q.n)}</b><br>${CLASSES[Q.cls].n} · Tahap ${Q.l}<br><span style="opacity:.8">${M2.ic} ${M2.n}${Q.m===mapIdx?' · 📍 sama kawasan':''}</span></div>${ok?`<button class="btn g" data-a="tp" data-id="${Q.m}">Pergi</button>`:''}</div>`}).join(''):'<div class="empty">Belum ada kawan. Kongsi game ini kepada kawan dan minta mereka buka sekarang.</div>';
+  h+=list.length?list.map(Q=>{const M2=Q.m===AI?ARENA_DEF:MAPS[Q.m],ok=Q.m<MAPS.length&&Q.m!==mapIdx&&canEnter(Q.m);return `<div class="mrow ${Q.m===mapIdx?'cur':''}"><div class="mi">${CLASSES[Q.cls].ic}</div><div class="mt"><b>${U(Q.n)}</b><br>${CLASSES[Q.cls].n} · Tahap ${Q.l}<br><span style="opacity:.8">${M2.ic} ${M2.n}${Q.m===mapIdx?' · 📍 sama kawasan':''}</span></div>${ok?`<button class="btn g" data-a="tp" data-id="${Q.m}">Pergi</button>`:''}${!Q.u?'':isFriend(Q.u)?'<span class="chip">⭐</span>':fpend.includes(Q.u)?'<span class="chip">⏳</span>':`<button class="btn d" style="padding:6px 9px" data-a="fadd" data-id="${Q.u}">➕</button>`}</div>`}).join(''):'<div class="empty">Belum ada kawan. Kongsi game ini kepada kawan dan minta mereka buka sekarang.</div>';
   h+=`<div class="sec">NAMA KAMU</div><input class="inp" id="nickin" maxlength="14" placeholder="${gender==='f'?'Wirawati':'Wira'}" value="${U(nick)}">`;
   h+=`<div class="sec">CARA MAIN BERSAMA</div>${ROOM&&!LHB_FB.builtin?'<button class="btn g big" data-a="fbcopy">📨 Salin Pautan Jemputan</button>':''}<div class="note" style="margin-top:8px">1. ${LHB_FB.builtin?'Kongsi pautan game ini kepada kawan.':'Tekan <b>Salin Pautan Jemputan</b> dan hantar kepada kawan (pautan ini sudah ada sambungan server).'}<br>2. Kawan buka pautan dan mula bermain dalam mod Multiplayer.<br>3. Masuk kawasan yang sama untuk nampak satu sama lain.<br><br>⚔️ Damage kawan pada bos dikira untuk semua<br>✨ Bonus +20% XP bila main sekawasan dengan kawan</div>`;
   return h}
 function sendEmote(e){emote={e,ts:Date.now()};selfEmT=3.5;sendPresence()}
+
+/* ================= FRIENDS ================= */
+const PIDRE=/^[A-Z0-9]{8}$/;
+let PID;try{PID=localStorage.getItem('lhb_pid')}catch(e){}
+if(!PID||!PIDRE.test(PID)){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';PID='';for(let i=0;i<8;i++)PID+=A[Math.floor(Math.random()*A.length)];try{localStorage.setItem('lhb_pid',PID)}catch(e){}}
+const fmtCode=u=>u.slice(0,4)+'-'+u.slice(4);
+let friends=[],fpend=[],frej=new Set(),fNotified=new Set(),fOnline={},fWasOnline=new Set(),fInbox=[];
+try{const d=JSON.parse(localStorage.getItem('lhb_friends')||'{}');if(Array.isArray(d.f))friends=d.f.filter(x=>x&&PIDRE.test(x.u)).slice(0,100);if(Array.isArray(d.p))fpend=d.p.filter(x=>PIDRE.test(x)).slice(0,10)}catch(e){}
+function fSave(){try{localStorage.setItem('lhb_friends',JSON.stringify({f:friends,p:fpend}))}catch(e){}}
+const isFriend=u=>!!u&&friends.some(f=>f.u===u);
+const fArr=v=>Array.isArray(v)?v.filter(x=>typeof x==='string'&&PIDRE.test(x)).slice(0,40):[];
+function fAdd(Q){if(!Q||!Q.u||Q.u===PID||isFriend(Q.u))return;friends.unshift({u:Q.u,n:Q.n,c:Q.cls,l:Q.l,t:Date.now()});fpend=fpend.filter(x=>x!==Q.u);fInbox=fInbox.filter(x=>x!==Q.u);fSave();
+  toast(`🤝 ${Q.n} kini kawan kamu!`);sfx.rare(1);sendPresence();if(modalKind==='party')renderModal()}
+function fRequest(u){if(!u||u===PID||isFriend(u)||fpend.includes(u))return;fpend.unshift(u);fpend=fpend.slice(0,10);fSave();sendPresence()}
+function friendTick(){const now=Date.now();fOnline={};
+  for(const Q of Object.values(remotes)){if(!Q.u)continue;fOnline[Q.u]=Q;
+    const f=friends.find(x=>x.u===Q.u);
+    if(f){f.n=Q.n;f.c=Q.cls;f.l=Q.l;f.t=now;if(!fWasOnline.has(Q.u)){fWasOnline.add(Q.u);toast(`🟢 Kawan ${Q.n} dalam talian`)}continue}
+    if(fpend.includes(Q.u)&&(Q.ac.includes(PID)||Q.rq.includes(PID))){fAdd(Q);continue}
+    if(Q.rq.includes(PID)&&!frej.has(Q.u)){if(!fInbox.includes(Q.u)){fInbox.push(Q.u);if(!fNotified.has(Q.u)){fNotified.add(Q.u);unread++;toast(`📨 ${Q.n} mahu jadi kawan kamu. Buka 👥 untuk terima.`);beep(900,.08,'triangle',.05)}if(modalKind==='party')renderModal()}}
+  }
+  for(const u of[...fWasOnline])if(!fOnline[u])fWasOnline.delete(u);
+  fInbox=fInbox.filter(u=>fOnline[u]&&!isFriend(u));
+  if(now-(friendTick.ls||0)>15000){friendTick.ls=now;fSave()}}
+function friendsHTML(){
+  let h=`<div class="sec">🤝 KAWAN SAYA (${friends.length})</div>
+  <div class="fcode"><div><small>KOD KAWAN KAMU</small><b>${fmtCode(PID)}</b></div><button class="btn d" data-a="fcopy">📋 Salin</button></div>
+  <div class="chatrow" style="margin-top:7px"><input class="inp" id="fcin" maxlength="9" placeholder="Kod kawan: AB12-CD34" style="text-transform:uppercase"><button class="btn g" data-a="fcode">➕ Tambah</button></div>`;
+  if(fInbox.length)h+=`<div class="note" style="margin-top:8px">📨 Permintaan kawan baru</div>`+fInbox.map(u=>{const Q=fOnline[u];return `<div class="mrow"><div class="mi">${CLASSES[Q.cls].ic}</div><div class="mt"><b>${U(Q.n)}</b><br>${CLASSES[Q.cls].n} · Tahap ${Q.l}</div><button class="btn g" data-a="facc" data-id="${u}">✔ OK</button><button class="btn d" data-a="frej" data-id="${u}">✕</button></div>`}).join('');
+  if(fpend.length)h+=`<div class="note" style="margin-top:8px;opacity:.8">⏳ Menunggu jawapan: ${fpend.map(u=>fmtCode(u)).join(', ')}<br><small>Permintaan akan sampai bila kawan itu dalam talian.</small> <button class="btn d" style="padding:3px 8px;font-size:11px" data-a="fpclr">Batal</button></div>`;
+  const sorted=[...friends].sort((a,b)=>(fOnline[b.u]?1:0)-(fOnline[a.u]?1:0));
+  h+=sorted.length?sorted.map(f=>{const Q=fOnline[f.u],c=CLASSES[f.c]||CLASSES.warrior;let st,btn='';
+    if(Q){const M2=Q.m===AI?ARENA_DEF:MAPS[Q.m];st=`<span style="color:#5fe08a">🟢 Dalam talian</span> · ${M2.ic} ${M2.n}`;if(Q.m<MAPS.length&&Q.m!==mapIdx&&canEnter(Q.m))btn=`<button class="btn g" data-a="tp" data-id="${Q.m}">Sertai</button>`}
+    else{const d=Math.floor((Date.now()-(f.t||0))/60000);st=`<span style="opacity:.6">⚫ Luar talian · ${d<60?d+' minit':d<1440?Math.floor(d/60)+' jam':Math.floor(d/1440)+' hari'} lalu</span>`}
+    return `<div class="mrow ${Q&&Q.m===mapIdx?'cur':''}"><div class="mi">${c.ic}</div><div class="mt"><b>⭐ ${U(f.n)}</b><br>${c.n} · Tahap ${f.l}<br>${st}</div>${btn}<button class="btn d" style="padding:6px 9px" data-a="fdel" data-id="${f.u}">🗑</button></div>`}).join('')
+  :'<div class="empty">Belum ada kawan. Tekan ➕ pada pemain dalam talian, atau kongsi kod kawan kamu.</div>';
+  return h}
+function friendAct(a,id){
+  if(a==='fcopy'){const t=fmtCode(PID);const ok=()=>toast('📋 Kod kawan disalin: '+t);if(navigator.clipboard)navigator.clipboard.writeText(t).then(ok,()=>prompt('Kod kawan kamu:',t));else prompt('Kod kawan kamu:',t);return true}
+  if(a==='fcode'){const el=document.getElementById('fcin'),v=(el&&el.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(!PIDRE.test(v)){toast('⚠️ Kod tak sah. Kod ada 8 huruf/nombor, cth: AB12-CD34');return true}if(v===PID){toast('😅 Itu kod kamu sendiri');return true}if(isFriend(v)){toast('Sudah jadi kawan');return true}
+    const Q=fOnline[v];if(Q&&(Q.rq.includes(PID)||Q.ac.includes(PID))){fAdd(Q);return true}fRequest(v);toast('📨 Permintaan dihantar ke '+fmtCode(v));renderModal();return true}
+  if(a==='fadd'){const Q=fOnline[id];if(!Q)return true;if(Q.rq.includes(PID)){fAdd(Q);return true}fRequest(id);toast(`📨 Permintaan kawan dihantar kepada ${Q.n}`);renderModal();return true}
+  if(a==='facc'){const Q=fOnline[id];if(Q)fAdd(Q);return true}
+  if(a==='frej'){frej.add(id);fInbox=fInbox.filter(x=>x!==id);renderModal();return true}
+  if(a==='fdel'){const f=friends.find(x=>x.u===id);if(f&&confirm(`Buang ${f.n} dari senarai kawan?`)){friends=friends.filter(x=>x.u!==id);fSave();sendPresence();renderModal()}return true}
+  if(a==='fpclr'){fpend=[];fSave();sendPresence();renderModal();return true}
+  return false}
 
 /* ================= SHOP ================= */
 let shopTab='buy';
