@@ -589,7 +589,7 @@ function blocked(x,y){
 }
 
 function genMap(i){
-  mapIdx=i;M=i===AI?ARENA_DEF:MAPS[i];TH=THEMES[M.th];seed=1000+i*7919;WW=3200;WH=2000;
+  mapIdx=i;M=i===AI?ARENA_DEF:MAPS[i];if(i>0&&i<MAPS.length&&started)setTimeout(()=>mqEnter(i),50);TH=THEMES[M.th];seed=1000+i*7919;WW=3200;WH=2000;
   trees=[];rocks=[];enemies=[];loots=[];projs=[];rings=[];respawnQ=[];parts=[];floats=[];fish=null;bossT=0;warns=[];eprojs=[];bolts=[];MERCH=null;SMITH=null;
   if(i===AI){genArena();return}
   if(i===0){
@@ -842,6 +842,25 @@ const DICT={
 'Multiplayer belum disambung. Tampal pautan':'Multiplayer not connected yet. Paste your','kamu di bawah (contoh:':'link below (example:','Sambung':'Connect','Salin Pautan Jemputan':'Copy Invite Link','Tukar pautan pangkalan data':'Change database link',
 'Tak dapat bersambung ke server Firebase. Semak internet atau pautan pangkalan data.':'Cannot connect to the Firebase server. Check your internet or database link.','Ranking perlukan sambungan Firebase. Tetapkan dalam menu 👥 Main Bersama.':'Ranking needs a Firebase connection. Set it up in the 👥 Play Together menu.',
 'Kongsi pautan game ini kepada kawan.':'Share this game link with friends.','Tekan':'Tap','dan hantar kepada kawan (pautan ini sudah ada sambungan server).':'and send it to friends (it includes the server connection).','Kawan buka pautan dan mula bermain dalam mod Multiplayer.':'Friends open the link and play in Multiplayer mode.',
+'MISI KAWASAN':'AREA MISSIONS','Selesaikan Misi':'Complete Mission','Selesaikan misi kawasan untuk buka':'Complete the area mission to unlock','Belum dibuka':'Locked','Pergi ke kawasan ini untuk mula':'Go to this area to start','Langkah Misi Selesai':'Mission Step Complete','Ganjaran item menanti!':'Item reward awaits!',
+'Pancing ikan':'Catch fish','kelengkapan di Meja Kerja':'gear at the Workbench','Tewaskan':'Defeat','Kumpul':'Collect','Capai Tahap':'Reach Level','Tingkat':'Floor','Terbaik':'Best','Dibuka':'Unlocked','tamatkan Tingkat':'clear Floor','dahulu':'first','buka kawasan':'unlock area','kini terbuka':'now unlocked','gelombang':'waves',
+'Tingkat baru pertama kali: bonus':'First clear of a new floor: bonus','(15 TINGKAT)':'(15 FLOORS)',
+'Ketua Kafilah':'Caravan Leader','Nelayan Tua':'Old Fisherman','Pelombong Gurun':'Desert Miner','Pengawal Gunung':'Mountain Guard','Pendaki Salji':'Snow Climber','Penjaga Awan':'Cloud Keeper','Pustakawan Langit':'Sky Librarian','Petani Padang':'Field Farmer','Pemungut Sampah':'Scrap Collector','Ketua Penghuni':'Resident Chief','Pertapa Api':'Fire Hermit','Penjaga Kubur':'Grave Keeper','Angkasawan':'Astronaut','Roh Pahlawan':'Hero Spirit',
+'Cendawan':'Mushroom','Ketam':'Crab','Obor-obor':'Jellyfish','Kambing Liar':'Wild Goat','Lipas':'Cockroach','Tikus':'Rat','Ayam Jantan':'Rooster','Rangka':'Skeleton','Kelawar':'Bat',
+'Ketam pasir menyerang kafilah kami. Bantu kami menyeberang padang pasir!':'Sand crabs are attacking our caravan. Help us cross the desert!',
+'Obor-obor merah memenuhi pantai. Bot nelayan tak berani turun ke laut!':'Red jellyfish fill the beach. The fishing boats dare not go out!',
+'Golem lahar menceroboh lombong. Kami perlukan besi untuk membina tembok!':'Lava golems invaded the mine. We need iron to build a wall!',
+'Puak Orc semakin ramai di celah batu. Kuatkan dirimu sebelum melawan rajanya!':'The Orc tribe grows among the rocks. Get stronger before facing their king!',
+'Slime salji membekukan laluan gunung. Bersiaplah untuk ribut di puncak!':'Snow slimes froze the mountain pass. Prepare for the storm at the peak!',
+'Makhluk awan liar menghalang jambatan langit. Bersihkan laluan ke istana!':'Wild cloud creatures block the sky bridge. Clear the way to the palace!',
+'Golem kristal menjaga istana. Kumpul besi untuk menempa senjata pembunuh naga!':'Crystal golems guard the palace. Collect iron to forge dragon-slaying weapons!',
+'Kambing liar memijak sawah kami. Halau mereka sebelum musim menuai!':'Wild goats trample our fields. Drive them off before harvest!',
+'Lipas gergasi membiak di timbunan sampah. Hapuskan sarang mereka!':'Giant cockroaches breed in the trash heaps. Destroy their nests!',
+'Tikus menguasai bandar runtuh. Bantu kami membina semula kota!':'Rats rule the ruined city. Help us rebuild!',
+'Ayam jantan api membakar segalanya. Kukuhkan pangkalanmu sebelum ke kawah!':'Fire roosters burn everything. Strengthen your base before the crater!',
+'Rangka bangkit setiap malam. Tenangkan tanah perkuburan ini!':'Skeletons rise every night. Bring peace to this graveyard!',
+'Kelawar kosmik merosakkan stesen angkasa. Bersiaplah untuk ke Alam Maut!':'Cosmic bats are wrecking the space station. Prepare for the Realm of Death!',
+'Inilah ujian terakhir. Kalahkan tentera Pencabut Nyawa dan selamatkan dunia!':'This is the final trial. Defeat the Grim Reaper\'s army and save the world!',
 'KAWAN SAYA':'MY FRIENDS','KOD KAWAN KAMU':'YOUR FRIEND CODE','Salin':'Copy','Kod kawan: AB12-CD34':'Friend code: AB12-CD34','Permintaan kawan baru':'New friend requests','Menunggu jawapan:':'Waiting for reply:',
 'Permintaan akan sampai bila kawan itu dalam talian.':'The request is delivered when that player is online.','Batal':'Cancel','Dalam talian':'Online','Luar talian':'Offline','Sertai':'Join',
 'Belum ada kawan. Tekan ➕ pada pemain dalam talian, atau kongsi kod kawan kamu.':'No friends yet. Tap ➕ on an online player, or share your friend code.',
@@ -975,7 +994,7 @@ function tickDialog(dt){if(!D)return;const L=D.lines[D.i];if(D.c<L.length){const
 let bannerT=0;
 function banner(h,p,t=3.2,col){const b=$('banner'),h2=b.querySelector('h2');h2.textContent=tr(h);h2.style.color=col||'#ffd979';b.querySelector('p').textContent=tr(p);b.classList.add('show');bannerT=t}
 function fl(x,y,t,c,big){floats.push({x,y,t:tr(t),c,life:big?1.6:1.1,big})}
-function addRes(k,n,x,y){if(n<=0)return;res[k]+=n;fl((x||hero.x)+R(-10,10),(y||hero.y)-50-R(0,15),`+${n} ${RES_INFO[k][0]}`,'#fff4c9')}
+function addRes(k,n,x,y){if(n<=0)return;res[k]+=n;if(started&&mapIdx>0&&mapIdx<MAPS.length){if(k==='ikan')mqProgress('fish','ikan',n);else if(x!==undefined&&(k==='kayu'||k==='batu'||k==='besi'))mqProgress('gather',k,n)}fl((x||hero.x)+R(-10,10),(y||hero.y)-50-R(0,15),`+${n} ${RES_INFO[k][0]}`,'#fff4c9')}
 function salvage(it,quiet){const g={besi:1+it.rar+Math.floor(it.tier/2),gel:1};if(it.rar>=2)g.permata=it.rar-1;for(const k in g)res[k]+=g[k];
   if(!quiet)fl(hero.x,hero.y-60,`Lerai: ${Object.entries(g).map(([k,v])=>'+'+v+RES_INFO[k][0]).join(' ')}`,'#cfe8ff')}
 function addItem(it){
@@ -991,33 +1010,83 @@ function gainXP(n){hero.xp+=n;fl(hero.x,hero.y-62,`+${n} XP`,'#9fe0ff');
     const nx=MAPS.findIndex((m,k)=>k>0&&m.lv===hero.lvl&&bossDown[k-1]);if(nx>0)setTimeout(()=>banner('Portal Dibuka!',`Kini boleh masuk ${MAPS[nx].ic} ${MAPS[nx].n}`,3.2,'#9ff3ff'),900)}}
 const canPay=c=>Object.entries(c).every(([k,v])=>res[k]>=v);
 const pay=c=>{for(const k in c)res[k]-=c[k]};
-const canEnter=k=>k===0||(bossDown[k-1]&&hero.lvl>=MAPS[k].lv);
-function lockReason(k){if(k===0)return'';if(!bossDown[k-1])return`Kalahkan ${MAPS[k-1].boss[1].name}`;if(hero.lvl<MAPS[k].lv)return`Perlu Tahap ${MAPS[k].lv}`;return''}
+const mqDone=k=>k<1||!MQ[k]||!!(mq[k]&&mq[k].done);
+const canEnter=k=>k===0||(bossDown[k-1]&&hero.lvl>=MAPS[k].lv&&mqDone(k-1));
+function lockReason(k){if(k===0)return'';if(!mqDone(k-1))return`Selesaikan Misi ${MAPS[k-1].n}`;if(!bossDown[k-1])return`Kalahkan ${MAPS[k-1].boss[1].name}`;if(hero.lvl<MAPS[k].lv)return`Perlu Tahap ${MAPS[k].lv}`;return''}
 
 /* ================= SAVE ================= */
 const SK='legenda_hutan_seri_v3';
-function save(){if(!started)return;try{localStorage.setItem(SK,JSON.stringify({nick,cls,gender,lvl:hero.lvl,xp:hero.xp,hp:hero.hp,res,inv,eq,baseLv,crafted,quest,itemSeq,bossDown,playT,arenaClears,ward:wardrobe,mapIdx:mapIdx===AI?0:mapIdx}))}catch(e){}}
+function save(){if(!started)return;try{localStorage.setItem(SK,JSON.stringify({nick,cls,gender,lvl:hero.lvl,xp:hero.xp,hp:hero.hp,res,inv,eq,baseLv,crafted,quest,itemSeq,bossDown,playT,arenaClears,ward:wardrobe,mq,dun:dunBest,mapIdx:mapIdx===AI?0:mapIdx}))}catch(e){}}
 function getSave(){try{return JSON.parse(localStorage.getItem(SK))}catch(e){return null}}
 function load(d){
   cls=d.cls||'warrior';gender=d.gender||'m';nick=d.nick||'';hero.lvl=d.lvl;hero.xp=d.xp;res=Object.assign(res,d.res);inv=d.inv||[];eq=Object.assign(eq,d.eq);baseLv=d.baseLv||1;crafted=d.crafted||0;
-  quest=Object.assign(quest,d.quest);itemSeq=d.itemSeq||itemSeq;bossDown=(d.bossDown||bossDown).slice();while(bossDown.length<MAPS.length)bossDown.push(0);playT=d.playT||0;arenaClears=d.arenaClears||0;wardrobe=WD0();if(d.ward&&typeof d.ward==='object'){const w=d.ward;if(Array.isArray(w.own))wardrobe.own=[...new Set([...wardrobe.own,...w.own.filter(x=>typeof x==='string')])];if(w.cos)for(const k in wardrobe.cos)if(wardrobe.own.includes(w.cos[k]))wardrobe.cos[k]=w.cos[k];if(wardrobe.own.includes(w.hair))wardrobe.hair=w.hair;if(wardrobe.own.includes(w.fx))wardrobe.fx=w.fx;if(wardrobe.own.includes(w.hs))wardrobe.hs=w.hs}recalc();hero.hp=Math.max(1,Math.min(ST.maxHp,d.hp||ST.maxHp));return d.mapIdx||0}
+  quest=Object.assign(quest,d.quest);itemSeq=d.itemSeq||itemSeq;bossDown=(d.bossDown||bossDown).slice();while(bossDown.length<MAPS.length)bossDown.push(0);playT=d.playT||0;arenaClears=d.arenaClears||0;mq=(d.mq&&typeof d.mq==='object')?d.mq:{};if(!d.mq)for(let m=1;m<MAPS.length;m++)if(bossDown[m])mq[m]={s:4,c:0,b:0,done:1,seen:1};dunBest=d.dun|0;for(let m=1;m<MAPS.length;m++){const q=mq[m];if(q&&!q.seen&&bossDown[m])q.seen=1}wardrobe=WD0();if(d.ward&&typeof d.ward==='object'){const w=d.ward;if(Array.isArray(w.own))wardrobe.own=[...new Set([...wardrobe.own,...w.own.filter(x=>typeof x==='string')])];if(w.cos)for(const k in wardrobe.cos)if(wardrobe.own.includes(w.cos[k]))wardrobe.cos[k]=w.cos[k];if(wardrobe.own.includes(w.hair))wardrobe.hair=w.hair;if(wardrobe.own.includes(w.fx))wardrobe.fx=w.fx;if(wardrobe.own.includes(w.hs))wardrobe.hs=w.hs}recalc();hero.hp=Math.max(1,Math.min(ST.maxHp,d.hp||ST.maxHp));return d.mapIdx||0}
 function wipe(){try{localStorage.removeItem(SK)}catch(e){}}
 
 /* ================= QUESTS ================= */
+/* ================= MAP MISSIONS ================= */
+const ENM={blob:'Slime',shroom:'Cendawan',crab:'Ketam',jelly:'Obor-obor',golem:'Golem',orc:'Orc',goat:'Kambing Liar',roach:'Lipas',rat:'Tikus',rooster:'Ayam Jantan',skeleton:'Rangka',bat:'Kelawar'};
+const MQ={
+ 1:{g:'Ketua Kafilah',i:'Ketam pasir menyerang kafilah kami. Bantu kami menyeberang padang pasir!',s:[['kill','crab',8],['gather','batu',12],['fish','ikan',3],['boss']]},
+ 2:{g:'Nelayan Tua',i:'Obor-obor merah memenuhi pantai. Bot nelayan tak berani turun ke laut!',s:[['kill','jelly',10],['fish','ikan',5],['gather','kayu',15],['boss']]},
+ 3:{g:'Pelombong Gurun',i:'Golem lahar menceroboh lombong. Kami perlukan besi untuk membina tembok!',s:[['kill','golem',8],['gather','besi',6],['kill','crab',8],['boss']]},
+ 4:{g:'Pengawal Gunung',i:'Puak Orc semakin ramai di celah batu. Kuatkan dirimu sebelum melawan rajanya!',s:[['kill','orc',10],['gather','batu',20],['craft',null,1],['boss']]},
+ 5:{g:'Pendaki Salji',i:'Slime salji membekukan laluan gunung. Bersiaplah untuk ribut di puncak!',s:[['kill','blob',12],['gather','besi',8],['lvl',null,23],['boss']]},
+ 6:{g:'Penjaga Awan',i:'Makhluk awan liar menghalang jambatan langit. Bersihkan laluan ke istana!',s:[['kill','jelly',12],['kill','blob',10],['gather','kayu',15],['boss']]},
+ 7:{g:'Pustakawan Langit',i:'Golem kristal menjaga istana. Kumpul besi untuk menempa senjata pembunuh naga!',s:[['kill','golem',10],['gather','besi',10],['fish','ikan',4],['boss']]},
+ 8:{g:'Petani Padang',i:'Kambing liar memijak sawah kami. Halau mereka sebelum musim menuai!',s:[['kill','goat',12],['gather','kayu',25],['fish','ikan',5],['boss']]},
+ 9:{g:'Pemungut Sampah',i:'Lipas gergasi membiak di timbunan sampah. Hapuskan sarang mereka!',s:[['kill','roach',15],['gather','batu',20],['kill','blob',10],['boss']]},
+ 10:{g:'Ketua Penghuni',i:'Tikus menguasai bandar runtuh. Bantu kami membina semula kota!',s:[['kill','rat',15],['gather','besi',10],['fish','ikan',4],['boss']]},
+ 11:{g:'Pertapa Api',i:'Ayam jantan api membakar segalanya. Kukuhkan pangkalanmu sebelum ke kawah!',s:[['kill','rooster',12],['kill','golem',10],['base',null,4],['boss']]},
+ 12:{g:'Penjaga Kubur',i:'Rangka bangkit setiap malam. Tenangkan tanah perkuburan ini!',s:[['kill','skeleton',15],['kill','bat',12],['gather','batu',20],['boss']]},
+ 13:{g:'Angkasawan',i:'Kelawar kosmik merosakkan stesen angkasa. Bersiaplah untuk ke Alam Maut!',s:[['kill','jelly',15],['gather','besi',12],['lvl',null,56],['boss']]},
+ 14:{g:'Roh Pahlawan',i:'Inilah ujian terakhir. Kalahkan tentera Pencabut Nyawa dan selamatkan dunia!',s:[['kill','skeleton',20],['kill','bat',15],['base',null,5],['boss']]}};
+let mq={};
+function mqGet(m){if(!MQ[m])return null;if(!mq[m])mq[m]={s:0,c:0,b:0,done:0,seen:0};return mq[m]}
+function mqStepText(m,st,c){const[t,a,n]=st,B=MAPS[m].boss[1].name;
+  if(t==='kill')return`⚔️ Tewaskan ${ENM[a]}: ${Math.min(c,n)}/${n}`;
+  if(t==='gather')return`${RES_INFO[a][0]} Kumpul ${RES_INFO[a][1]}: ${Math.min(c,n)}/${n}`;
+  if(t==='fish')return`🎣 Pancing ikan: ${Math.min(c,n)}/${n}`;
+  if(t==='craft')return`🔨 Tempa ${n} kelengkapan di Meja Kerja: ${Math.min(c,n)}/${n}`;
+  if(t==='lvl')return`📈 Capai Tahap ${n} (${hero.lvl}/${n})`;
+  if(t==='base')return`🏗️ Naik taraf Pangkalan ke Tahap ${n} (${baseLv}/${n})`;
+  return`👑 Kalahkan ${B}`}
+function mqText(m){const q=mqGet(m);if(!q)return null;if(q.done)return null;return`[${q.s+1}/${MQ[m].s.length}] `+mqStepText(m,MQ[m].s[q.s],q.c)}
+function mqEnter(m){const q=mqGet(m);if(!q||q.done)return;if(!q.seen){q.seen=1;setTimeout(()=>{banner(`📜 Misi: ${MAPS[m].n}`,`${MQ[m].g}: "${MQ[m].i}"`,5,'#ffd979')},1600);save()}mqCheck(m)}
+function mqProgress(type,arg,n){const m=mapIdx;const q=mqGet(m);if(!q||q.done)return;const st=MQ[m].s[q.s];
+  if(st[0]!==type)return;if((type==='kill'||type==='gather')&&st[1]!==arg)return;q.c+=n;mqCheck(m)}
+function mqCheck(m){const q=mqGet(m);if(!q||q.done)return;const L=MQ[m].s;let adv=false;
+  for(let guard=0;guard<6&&!q.done;guard++){const[t,a,n]=L[q.s];let ok=false;
+    if(t==='kill'||t==='gather'||t==='fish')ok=q.c>=n;else if(t==='craft')ok=crafted-q.b>=n;else if(t==='lvl')ok=hero.lvl>=n;else if(t==='base')ok=baseLv>=n;else ok=!!bossDown[m];
+    if(!ok)break;adv=true;q.s++;q.c=0;q.b=crafted;
+    const coin=Math.round(30*(m+1));addRes('coin',coin,hero.x,hero.y-10);gainXP(Math.round(40+m*30));
+    if(q.s>=L.length){q.done=1;mqFinish(m)}else banner('✅ Langkah Misi Selesai',mqStepText(m,L[q.s],0),3)}
+  if(adv){sfx.get();save()}}
+function mqFinish(m){const T=Math.min(MAPS.length,m+1),c=Math.round(150+m*80),p=1+Math.floor(m/3);
+  addRes('coin',c,hero.x,hero.y-20);addRes('permata',p,hero.x,hero.y-40);gainXP(Math.round(120+m*60));
+  dropLoot(hero.x,hero.y+30,makeItem(SLOTS[RI(0,5)],rollRar([0,50,40,10]),T));sfx.win();
+  setTimeout(()=>banner(`🏆 Misi ${MAPS[m].n} Tamat!`,`+${c} 🪙 · +${p} 💎 · Ganjaran item menanti!`,4.5),300)}
+function mqTick(){if(mapIdx>0&&mapIdx<MAPS.length){const q=mqGet(mapIdx);if(q&&!q.done){const t=MQ[mapIdx].s[q.s][0];if(t==='lvl'||t==='base'||t==='boss'||t==='craft')mqCheck(mapIdx)}}}
+function mqListHTML(){let h='<div class="sec">📜 MISI KAWASAN</div>';
+  for(let m=1;m<MAPS.length;m++){const ok=canEnter(m),q=mq[m];const st=!ok?'🔒 Belum dibuka':q&&q.done?'✅ Selesai':q&&q.seen?mqText(m):'❕ Pergi ke kawasan ini untuk mula';
+    h+=`<div class="mrow ${m===mapIdx?'cur':''}"><div class="mi">${ok?MAPS[m].ic:'🔒'}</div><div class="mt"><b>${MAPS[m].n}</b>${ok?` · <span style="opacity:.7">${MQ[m].g}</span>`:''}<br><span style="opacity:.85">${st}</span></div></div>`}
+  return h}
+
 const progressMap=()=>{const k=bossDown.findIndex(b=>!b);return k<0?MAPS.length:k};
 function questText(){
-  if(mapIdx===AI&&arena){const A=arena;return A.state==='done'?'🌀 Ambil ganjaran & masuk portal':`⚔️ ${A.mode==='wave'?'Gelombang':'Bos'} ${Math.max(1,A.wave)}/${A.waves} · ${A.D.n}`}
+  if(mapIdx===AI&&arena){const A=arena;return A.state==='done'?'🌀 Ambil ganjaran & masuk portal':`${A.mode==='wave'?`🕳️ Tingkat ${A.top+1} · `:''}⚔️ ${A.mode==='wave'?'Gelombang':'Bos'} ${Math.max(1,A.wave)}/${A.waves} · ${A.D.n}`}
   const s=quest.state;
   if(s===0)return'📜 Bercakap dengan Tok Penghulu';if(s===1)return`⚔️ Tewaskan Slime: ${quest.kills}/${quest.need}`;if(s===2)return'✅ Kembali kepada Tok Penghulu';
   if(s===3)return`🏗️ Naik taraf Pangkalan ke Tahap 2 (🪵${Math.min(res.kayu,10)}/10 🪨${Math.min(res.batu,6)}/6)`;if(s===4)return'🔨 Tempa 1 kelengkapan di Meja Kerja';
   if(s===5)return'👑 Kalahkan Raja Slime di timur tasik';
+  if(mapIdx>0&&mapIdx<MAPS.length){const t=mqText(mapIdx);if(t)return t}
   const p=progressMap();if(p>=MAPS.length)return'🏆 15 kawasan ditakluk! Buru item Mitos';
-  if(!canEnter(p))return`📈 Capai Tahap ${MAPS[p].lv} untuk ke ${MAPS[p].ic} ${MAPS[p].n}`;
+  if(!canEnter(p)){if(!mqDone(p-1))return`📜 Selesaikan Misi ${MAPS[p-1].n} dahulu`;return`📈 Capai Tahap ${MAPS[p].lv} untuk ke ${MAPS[p].ic} ${MAPS[p].n}`}
   if(mapIdx!==p)return`🌀 Pergi ke ${MAPS[p].ic} ${MAPS[p].n} (portal timur)`;
   return`👑 Kalahkan ${M.boss[1].name}`;
 }
 function setQuest(s){quest.state=s;if(s===5&&mapIdx===0&&!bossAlive()){spawnEnemy('boss');banner('👑 Raja Slime Bangkit!','Pergi ke timur tasik di utara')}save()}
-function questTick(){if(quest.state===3&&baseLv>=2){banner('Pangkalan Tahap 2!','Misi seterusnya: tempa kelengkapan');setQuest(4)}if(quest.state===4&&crafted>=1)setQuest(5)}
+function questTick(){mqTick();if(quest.state===3&&baseLv>=2){banner('Pangkalan Tahap 2!','Misi seterusnya: tempa kelengkapan');setQuest(4)}if(quest.state===4&&crafted>=1)setQuest(5)}
 function talkElder(){
   const s=quest.state,T='Tok Penghulu',nm=gender==='f'?'wirawati':'wira';
   if(s===0)openDialog(T,[`Ah, ${nm} muda! Syukur kamu tiba di Kampung Seri.`,'Hutan di timur kini dipenuhi Slime liar. Habis kebun kami dirosakkan!','Tolong tewaskan 5 ekor Slime. Ikut anak panah emas itu.'],()=>{setQuest(1);banner('Misi Baharu','Tewaskan 5 Slime di hutan timur')});
@@ -1076,7 +1145,7 @@ function renderModal(){
     h=`<h3>🗺️ Peta Dunia<button class="x" data-a="close">✕</button></h3>`;
     h+=`<button class="btn g big" data-a="home" style="margin-top:0">🏠 Balik ke Pangkalan</button>`;if(progressMap()>=MAPS.length)h+=`<button class="btn d big" data-a="ending">🏆 Lihat Skrin Tamat</button>`;
     {const bl=bossDown.filter(Boolean).length,tb=m=>`<div class="tabs">${Object.entries(DIFF).map(([k,v])=>`<button class="btn ${k==='mudah'?'d':'g'}" data-a="arena" data-id="${m}:${k}">${v.n}</button>`).join('')}</div>`;
-    h+=`<div class="sec">🕳️ DUNGEON · GUA UJIAN</div><div class="mrow"><div class="mi">🌊</div><div class="mt"><b>Gua Gelombang</b><br>5 gelombang musuh + bos di akhir</div></div>${tb('wave')}<div class="mrow"><div class="mi">👑</div><div class="mt"><b>Pertarungan Bos</b><br>${bl?`Lawan ${bl} bos berturut-turut`:'Kalahkan sekurang-kurangnya 1 bos dahulu'}</div></div>${bl?tb('boss'):''}<div class="note">Mudah: ganjaran biasa · Sukar: ×1.8 · Neraka: ×3 & peluang Mitos tinggi</div><div class="sec">TELEPORT</div>`}
+    const dm=dunMax();dunSel=Math.max(1,Math.min(dunSel,dm));const DM=MAPS[dunSel-1];h+=`<div class="sec">🕳️ DUNGEON · GUA UJIAN (15 TINGKAT)</div><div class="mrow"><div class="mi">${DM.ic}</div><div class="mt"><b>Tingkat ${dunSel} · ${DM.n}</b><br>5 gelombang ${ENM[DM.en[0][0]]} & ${ENM[DM.en[1][0]]} + ${DM.boss[1].name}<br><span style="opacity:.75">Terbaik: Tingkat ${dunBest}/15 · Dibuka: ${dm}/15</span></div></div><div class="tabs"><button class="btn d" data-a="dunfl" data-id="-1" ${dunSel<=1?'disabled':''}>◀</button><button class="btn d" style="flex:2" disabled>Tingkat ${dunSel}</button><button class="btn d" data-a="dunfl" data-id="1" ${dunSel>=dm?'disabled':''}>▶</button></div>${tb('wave')}${dm<MAPS.length?`<div class="note">🔒 Tingkat ${dm+1}: ${dunBest<dm?`tamatkan Tingkat ${dm} dahulu`:`buka kawasan ${MAPS[dm].n} dahulu`}</div>`:''}<div class="mrow"><div class="mi">👑</div><div class="mt"><b>Pertarungan Bos</b><br>${bl?`Lawan ${bl} bos berturut-turut`:'Kalahkan sekurang-kurangnya 1 bos dahulu'}</div></div>${bl?tb('boss'):''}<div class="note">Mudah: ganjaran biasa · Sukar: ×1.8 · Neraka: ×3 & peluang Mitos tinggi · Tingkat baru pertama kali: bonus 💎</div>`+mqListHTML()+`<div class="sec">TELEPORT</div>`}
     MAPS.forEach((m,k)=>{const ok=canEnter(k),cur=k===mapIdx;
       h+=`<div class="mrow ${cur?'cur':''}"><div class="mi">${ok?m.ic:'🔒'}</div><div class="mt"><b>${k+1}. ${m.n}</b><br>Tahap ${m.lv}+ · Bos: ${m.boss[1].name} ${bossDown[k]?'✅':''}<br><span style="opacity:.75">${ok?(cur?'📍 Kamu di sini':'Boleh dimasuki'):'🔒 '+lockReason(k)}</span></div>${ok&&!cur?`<button class="btn g" data-a="tp" data-id="${k}">Pergi</button>`:''}</div>`});
   }
@@ -1101,6 +1170,7 @@ modal.addEventListener('click',e=>{
   if(a==='sellall0'){const b2=inv.filter(i=>i.rar===0);b2.forEach(i=>res.coin+=itemPrice(i));inv=inv.filter(i=>i.rar>0);if(b2.length)sfx.get()}
   if(a==='pot'&&res.ubat>0&&hero.hp<ST.maxHp){res.ubat--;heal(.4)}
   if(a==='potB'&&res.ubatB>0&&hero.hp<ST.maxHp){res.ubatB--;heal(1)}
+  if(a==='dunfl'){dunSel=Math.max(1,Math.min(dunMax(),dunSel+(+id)));renderModal();return}
   if(a==='arena'){const[m2,d2]=String(id).split(':');startArena(m2,d2);return}
   if(a==='lang'){SET.lang=id==='en'?'en':'ms';saveSet();langChanged();return}
   if(a==='jside'){SET.jside=id==='right'?'right':'left';saveSet();applySettings()}
@@ -1328,6 +1398,7 @@ function killEnemy(s){
   if(!s.boss){
     addRes('coin',RI(2,5)*(1+m),s.x,s.y+12);addRes('gel',1,s.x,s.y);if(s.arch==='golem'&&Math.random()<.5)addRes('besi',1,s.x,s.y-18);if(s.arch==='crab'&&Math.random()<.3)addRes('batu',1,s.x,s.y-18);
     if(Math.random()<.07+m*.005)dropLoot(s.x,s.y,makeItem(SLOTS[RI(0,5)],rollRar(m<3?[80,17,3,0]:m<6?[62,28,9,1]:[45,38,14,3]),T));
+    mqProgress('kill',s.arch,1);
     if(mapIdx===0&&s.arch==='blob'&&quest.state===1){quest.kills++;if(quest.kills>=quest.need){quest.state=2;setTimeout(()=>banner('Misi Selesai!','Kembali kepada Tok Penghulu'),400)}}
     respawnQ.push({k:s.k,t:R(4,8)});
   }else{
@@ -1336,8 +1407,9 @@ function killEnemy(s){
     dropLoot(s.x,s.y,makeItem(SLOTS[RI(0,5)],rollRar(w),T));dropLoot(s.x,s.y,makeItem(SLOTS[RI(0,5)],rollRar(w),T));if(Math.random()<.5)dropLoot(s.x,s.y,makeItem(SLOTS[RI(0,5)],rollRar(w),T));
     shake=14;bossT=90;const first=!bossDown[m];bossDown[m]=1;
     if(m===0&&quest.state===5)quest.state=6;
+    setTimeout(()=>mqCheck(m),200);
     if(first){sfx.win();if(m===MAPS.length-1)setTimeout(showEnding,1800);
-      else{const n=MAPS[m+1];setTimeout(()=>banner(`${s.name} Tewas!`,hero.lvl>=n.lv?`Portal ke ${n.ic} ${n.n} kini terbuka!`:`Capai Tahap ${n.lv} untuk masuk ${n.ic} ${n.n}`,4),500)}}
+      else{const n=MAPS[m+1];setTimeout(()=>banner(`${s.name} Tewas!`,canEnter(m+1)?`Portal ke ${n.ic} ${n.n} kini terbuka!`:!mqDone(m)?`Selesaikan misi kawasan untuk buka ${n.ic} ${n.n}`:`Capai Tahap ${n.lv} untuk masuk ${n.ic} ${n.n}`,4),500)}}
     else fl(s.x,s.y-90,`${s.name} tumpas! (bangkit semula 90s)`,'#ffd979',1);
   }
   save();
@@ -2282,25 +2354,27 @@ function drawMerchant(){if(!MERCH)return;const x=MERCH.x,y=MERCH.y,b=Math.sin(ti
 const ARENA_DEF={n:'Gua Ujian',ic:'🕳️',lv:1,th:'dungeon',wx:['malam'],en:[],boss:null};
 const DIFF={mudah:{n:'Mudah',hp:.8,dmg:.8,r:1,w:[50,35,13,2]},sukar:{n:'Sukar',hp:1.4,dmg:1.3,r:1.8,w:[20,45,28,7]},neraka:{n:'Neraka',hp:2.2,dmg:1.8,r:3,w:[0,35,45,20]}};
 const TORCH=Array.from({length:16},(_,k)=>{const a=k/16*TAU;return{x:800+Math.cos(a)*705,y:600+Math.sin(a)*478}});
-let arena=null;
+let arena=null,dunBest=0,dunSel=1;
+const dunMax=()=>{let k=1;while(k<MAPS.length&&canEnter(k)&&dunBest>=k)k++;return k};
 const topMap=()=>{let t=0;for(let k=0;k<MAPS.length;k++)if(canEnter(k))t=k;return t};
 function startArena(mode,diff){const list=bossDown.map((b,k)=>b?k:-1).filter(k=>k>=0);if(mode==='boss'&&!list.length)return;if(!DIFF[diff])return;
-  arena={mode,diff,D:DIFF[diff],wave:0,waves:mode==='boss'?list.length:5,list,t:2.5,state:'intro',top:topMap()};closeModal();travel(AI,'w')}
+  const fl2=Math.max(1,Math.min(dunSel,dunMax()));arena={mode,diff,D:DIFF[diff],wave:0,waves:mode==='boss'?list.length:5,list,t:2.5,state:'intro',top:mode==='wave'?fl2-1:topMap()};closeModal();travel(AI,'w')}
 function genArena(){WW=1600;WH=1200;paths=[];waters=[];portals=[];MERCH=null;BOSS_SPOT={x:800,y:560};entryW=entryE={x:800,y:930};ROCK_SPR=makeRock(THEMES.dungeon.rock);renderGround();setWeather('malam',true)}
 function arenaPos(){const a=Math.random()*TAU;return{x:800+Math.cos(a)*R(380,600),y:600+Math.sin(a)*R(240,400)}}
 function spawnWave(){const A=arena;
-  if(A.mode==='wave'){const n=3+A.wave*2;for(let k=0;k<n;k++){const mi=RI(0,A.top),[arch,o]=MAPS[mi].en[RI(0,1)],p=arenaPos();makeEnemy(arch,o,false,p.x,p.y,A.top,A.D).range=3000}
-    if(A.wave===A.waves){const mi=RI(0,A.top),[arch,o]=MAPS[mi].boss;makeEnemy(arch,o,true,800,420,A.top,A.D).range=3000}}
+  if(A.mode==='wave'){const n=3+A.wave*2;for(let k=0;k<n;k++){const mi=A.top,[arch,o]=MAPS[mi].en[RI(0,1)],p=arenaPos();makeEnemy(arch,o,false,p.x,p.y,A.top,A.D).range=3000}
+    if(A.wave===A.waves){const mi=A.top,[arch,o]=MAPS[mi].boss;makeEnemy(arch,o,true,800,420,A.top,A.D).range=3000}}
   else{const mi=A.list[A.wave-1],[arch,o]=MAPS[mi].boss;makeEnemy(arch,o,true,800,420,mi,A.D).range=3000;for(let k=0;k<2;k++){const[a2,o2]=MAPS[mi].en[k],p=arenaPos();makeEnemy(a2,o2,false,p.x,p.y,mi,A.D).range=3000}}
   banner(A.mode==='wave'?`Gelombang ${A.wave}/${A.waves}`:`Bos ${A.wave}/${A.waves}`,A.mode==='wave'?(A.wave===A.waves?'Bos muncul!':'Tewaskan semua musuh!'):MAPS[A.list[A.wave-1]].boss[1].name,2.2,'#ff9a5a')}
 function tickArena(dt){const A=arena;if(!A||mapIdx!==AI||trans)return;
   if(A.state==='intro'||A.state==='between'){A.t-=dt;if(A.t<=0){A.wave++;A.state='fight';spawnWave()}}
   else if(A.state==='fight'&&!enemies.some(e=>!e.dead)){if(A.wave>=A.waves){A.state='done';arenaWin()}else{A.state='between';A.t=2.5;fl(hero.x,hero.y-80,'Gelombang seterusnya...','#ffd979',1)}}}
 function arenaWin(){const A=arena,T=Math.min(MAPS.length,A.top+1),c=Math.round((120+A.top*90)*A.D.r*(A.mode==='boss'?1+A.waves*.4:1));
-  arenaClears++;addRes('coin',c,800,560);gainXP(Math.round((80+A.top*70)*A.D.r));sfx.win();
+  arenaClears++;let newFl=false;if(A.mode==='wave'&&A.top+1>dunBest){dunBest=A.top+1;newFl=true;dunSel=Math.min(MAPS.length,dunBest+1)}addRes('coin',c,800,560);gainXP(Math.round((80+A.top*70)*A.D.r));sfx.win();
   const n=A.mode==='boss'?Math.min(4,1+Math.ceil(A.waves/2)):2+(A.diff==='neraka'?1:0);for(let k=0;k<n;k++)dropLoot(800,600,makeItem(SLOTS[RI(0,5)],rollRar(A.D.w),T));
   if(Math.random()<.5)addRes('permata',RI(1,3),800,540);
-  portals=[{x:800,y:470,to:0,exit:1}];banner('🏆 Dungeon Tamat!',`+${c} 🪙 · Ambil ganjaran & masuk portal`,4);save()}
+  if(newFl)addRes('permata',1+Math.floor(A.top/3),800,520);
+  portals=[{x:800,y:470,to:0,exit:1}];banner(A.mode==='wave'?`🏆 Tingkat ${A.top+1} Tamat!`:'🏆 Dungeon Tamat!',newFl&&A.top+1<MAPS.length?`+${c} 🪙 · Tingkat ${A.top+2} kini terbuka!`:`+${c} 🪙 · Ambil ganjaran & masuk portal`,4);save()}
 function drawTorch(t){ctx.save();ctx.translate(t.x,t.y);ctx.fillStyle='#4a3a30';rr(ctx,-3,-40,6,40,2);ctx.fill();ctx.fillStyle='#6d6f78';rr(ctx,-8,-46,16,7,3);ctx.fill();
   const f=Math.sin(time*13+t.x)*1.5;ctx.fillStyle='#ff6a1f';ctx.beginPath();ctx.moveTo(-6,-46);ctx.quadraticCurveTo(-7,-56,f,-66);ctx.quadraticCurveTo(7,-56,6,-46);ctx.fill();ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.moveTo(-3,-46);ctx.quadraticCurveTo(-3,-52,f*.5,-58);ctx.quadraticCurveTo(3,-52,3,-46);ctx.fill();
   ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(0,-50,0,0,-50,110);g.addColorStop(0,'rgba(255,150,60,.35)');g.addColorStop(1,'rgba(255,150,60,0)');ctx.fillStyle=g;ctx.fillRect(-110,-160,220,220);ctx.restore()}
@@ -2688,7 +2762,7 @@ function drawPreview(dt){if($('create').style.display!=='flex')return;pvFace+=dt
 $('go').addEventListener('click',()=>{$('create').style.display='none';beginGame(null)});
 function beginGame(d){
   initAudio();document.body.classList.add('ingame');setTimeout(()=>{sideOpen(true);actOpen(true)},400);
-  let m=0;if(d)m=load(d);else{wipe();wardrobe=WD0();recalc();hero.hp=ST.maxHp}
+  let m=0;if(d)m=load(d);else{wipe();wardrobe=WD0();mq={};dunBest=0;dunSel=1;recalc();hero.hp=ST.maxHp}
   started=true;genMap(m);
   if(m===0){hero.x=d?BASE.x+40:600;hero.y=d?BASE.y+70:990}else{hero.x=entryW.x;hero.y=entryW.y}
   hero.inv=1;setTimeout(()=>banner(`${M.ic} ${M.n}`,d?'Selamat kembali!':'Bercakap dengan Tok Penghulu',2.8),300);save();
