@@ -2085,7 +2085,7 @@ function drawSmith(){if(!SMITH)return;const x=SMITH.x,y=SMITH.y,ph=(time*.9)%1,s
   if(!(window.claude&&typeof window.claude.use==='function')){if(tries<12)setTimeout(()=>connectRoom(tries+1),700);else roomOk=false;return}
   connectDB();
   window.claude.use('room').then(r=>{if(!r){roomOk=false;return}ROOM=r;roomOk=true;
-    r.onPeers(ch=>{peersArr=ch.peers;for(const p of ch.left)delete remotes[p.peer];if($('menu').style.display!=='none')renderMenu();if(modalKind==='party'&&!(document.activeElement&&(document.activeElement.id==='nickin'||document.activeElement.id==='chatin')))renderModal()},()=>{roomOk=false;ROOM=null;peersArr=[];remotes={}});
+    r.onPeers(ch=>{peersArr=ch.peers;for(const p of ch.left)delete remotes[p.peer];if($('menu').style.display!=='none')renderMenu();if(modalKind==='party')partyRefresh()},()=>{roomOk=false;ROOM=null;peersArr=[];remotes={}});
   }).catch(()=>{roomOk=false});
 })(0);
 function sendPresence(){if(!ROOM||!started||SET.mode==='solo')return;
@@ -2154,14 +2154,17 @@ function fSave(){try{localStorage.setItem('lhb_friends',JSON.stringify({f:friend
 const isFriend=u=>!!u&&friends.some(f=>f.u===u);
 const fArr=v=>Array.isArray(v)?v.filter(x=>typeof x==='string'&&PIDRE.test(x)).slice(0,40):[];
 function fAdd(Q){if(!Q||!Q.u||Q.u===PID||isFriend(Q.u))return;friends.unshift({u:Q.u,n:Q.n,c:Q.cls,l:Q.l,t:Date.now()});fpend=fpend.filter(x=>x!==Q.u);fInbox=fInbox.filter(x=>x!==Q.u);fSave();
-  toast(`🤝 ${Q.n} kini kawan kamu!`);sfx.rare(1);sendPresence();if(modalKind==='party')renderModal()}
+  toast(`🤝 ${Q.n} kini kawan kamu!`);sfx.rare(1);sendPresence();if(modalKind==='party')partyRefresh(1)}
 function fRequest(u){if(!u||u===PID||isFriend(u)||fpend.includes(u))return;fpend.unshift(u);fpend=fpend.slice(0,10);fSave();sendPresence()}
+function partySig(){return JSON.stringify([Object.values(remotes).map(Q=>[Q.u,Q.n,Q.cls,Q.l,Q.m]),friends.map(f=>[f.u,f.n,f.l,!!fOnline[f.u]]),fInbox,fpend,mapIdx,!!ROOM])}
+let lastPartySig='';
+function partyRefresh(force){const ae=document.activeElement;if(!force&&ae&&['nickin','chatin','fcin'].includes(ae.id))return;const sg=partySig();if(!force&&sg===lastPartySig)return;lastPartySig=sg;const st=mbox.scrollTop;renderModal();mbox.scrollTop=st}
 function friendTick(){const now=Date.now();fOnline={};
   for(const Q of Object.values(remotes)){if(!Q.u)continue;fOnline[Q.u]=Q;
     const f=friends.find(x=>x.u===Q.u);
     if(f){f.n=Q.n;f.c=Q.cls;f.l=Q.l;f.t=now;if(!fWasOnline.has(Q.u)){fWasOnline.add(Q.u);toast(`🟢 Kawan ${Q.n} dalam talian`)}continue}
     if(fpend.includes(Q.u)&&(Q.ac.includes(PID)||Q.rq.includes(PID))){fAdd(Q);continue}
-    if(Q.rq.includes(PID)&&!frej.has(Q.u)){if(!fInbox.includes(Q.u)){fInbox.push(Q.u);if(!fNotified.has(Q.u)){fNotified.add(Q.u);unread++;toast(`📨 ${Q.n} mahu jadi kawan kamu. Buka 👥 untuk terima.`);beep(900,.08,'triangle',.05)}if(modalKind==='party')renderModal()}}
+    if(Q.rq.includes(PID)&&!frej.has(Q.u)){if(!fInbox.includes(Q.u)){fInbox.push(Q.u);if(!fNotified.has(Q.u)){fNotified.add(Q.u);unread++;toast(`📨 ${Q.n} mahu jadi kawan kamu. Buka 👥 untuk terima.`);beep(900,.08,'triangle',.05)}if(modalKind==='party')partyRefresh(1)}}
   }
   for(const u of[...fWasOnline])if(!fOnline[u])fWasOnline.delete(u);
   fInbox=fInbox.filter(u=>fOnline[u]&&!isFriend(u));
@@ -2183,12 +2186,12 @@ function friendAct(a,id){
   if(a==='fcopy'){const t=fmtCode(PID);const ok=()=>toast('📋 Kod kawan disalin: '+t);if(navigator.clipboard)navigator.clipboard.writeText(t).then(ok,()=>prompt('Kod kawan kamu:',t));else prompt('Kod kawan kamu:',t);return true}
   if(a==='fcode'){const el=document.getElementById('fcin'),v=(el&&el.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
     if(!PIDRE.test(v)){toast('⚠️ Kod tak sah. Kod ada 8 huruf/nombor, cth: AB12-CD34');return true}if(v===PID){toast('😅 Itu kod kamu sendiri');return true}if(isFriend(v)){toast('Sudah jadi kawan');return true}
-    const Q=fOnline[v];if(Q&&(Q.rq.includes(PID)||Q.ac.includes(PID))){fAdd(Q);return true}fRequest(v);toast('📨 Permintaan dihantar ke '+fmtCode(v));renderModal();return true}
-  if(a==='fadd'){const Q=fOnline[id];if(!Q)return true;if(Q.rq.includes(PID)){fAdd(Q);return true}fRequest(id);toast(`📨 Permintaan kawan dihantar kepada ${Q.n}`);renderModal();return true}
+    const Q=fOnline[v];if(Q&&(Q.rq.includes(PID)||Q.ac.includes(PID))){fAdd(Q);return true}fRequest(v);toast('📨 Permintaan dihantar ke '+fmtCode(v));partyRefresh(1);return true}
+  if(a==='fadd'){const Q=fOnline[id];if(!Q)return true;if(Q.rq.includes(PID)){fAdd(Q);return true}fRequest(id);toast(`📨 Permintaan kawan dihantar kepada ${Q.n}`);partyRefresh(1);return true}
   if(a==='facc'){const Q=fOnline[id];if(Q)fAdd(Q);return true}
-  if(a==='frej'){frej.add(id);fInbox=fInbox.filter(x=>x!==id);renderModal();return true}
-  if(a==='fdel'){const f=friends.find(x=>x.u===id);if(f&&confirm(`Buang ${f.n} dari senarai kawan?`)){friends=friends.filter(x=>x.u!==id);fSave();sendPresence();renderModal()}return true}
-  if(a==='fpclr'){fpend=[];fSave();sendPresence();renderModal();return true}
+  if(a==='frej'){frej.add(id);fInbox=fInbox.filter(x=>x!==id);partyRefresh(1);return true}
+  if(a==='fdel'){const f=friends.find(x=>x.u===id);if(f&&confirm(`Buang ${f.n} dari senarai kawan?`)){friends=friends.filter(x=>x.u!==id);fSave();sendPresence();partyRefresh(1)}return true}
+  if(a==='fpclr'){fpend=[];fSave();sendPresence();partyRefresh(1);return true}
   return false}
 
 /* ================= SHOP ================= */
