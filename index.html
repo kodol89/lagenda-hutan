@@ -342,10 +342,10 @@ body:not(.ingame) #act,body:not(.ingame) #acttog{display:none!important}
 <script>
 (()=>{
 const cv=document.getElementById('c');let ctx=cv.getContext('2d');
-let W,H,DPR,Z,vig;
+let W,H,DPR,Z,vig,QLV=0;const QSC=[1,.78,.62,.5];
 let ORIENT='auto',ROT=false;
 function resize(){
-  DPR=Math.min(2,window.devicePixelRatio||1);const iw=innerWidth,ih=innerHeight,root=document.getElementById('root');
+  DPR=Math.max(.75,Math.min(2,window.devicePixelRatio||1)*QSC[QLV]);const iw=innerWidth,ih=innerHeight,root=document.getElementById('root');
   ROT=ORIENT==='land'&&ih>iw;document.body.classList.toggle('rot',ROT);
   if(ROT){W=ih;H=iw;root.style.cssText=`inset:auto;top:0;left:${iw}px;width:${ih}px;height:${iw}px;transform-origin:0 0;transform:rotate(90deg)`}
   else{W=iw;H=ih;root.style.cssText=''}
@@ -1334,7 +1334,7 @@ function update(dt){
   if(bannerT>0){bannerT-=dt;if(bannerT<=0)$('banner').classList.remove('show')}
   if(!started)return;
   if(!paused)playT+=dt;
-  updateUI();if(started&&!hero.dead&&mapIdx!==undefined)fxSpawn(wardrobe.fx,hero.x,hero.y,parts,14,dt);tickRemotes(dt);scoreT+=dt;if(scoreT>15){scoreT=0;pushScore()}if(sideT>0&&!modalKind){sideT-=dt;if(sideT<=0)sideOpen(false)}if(actT>0&&!modalKind){actT-=dt;if(actT<=0)actOpen(false)}for(const b of actEl.children)b.classList.toggle('on',b.dataset.p===hero.pose||(b.dataset.p==='fish'&&!!fish));setUI('tdot','display',(newItems>0||unread>0)&&!sideEl.classList.contains('open')?'block':'none');if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('show')}if(selfSay){selfSay.T-=dt;if(selfSay.T<=0)selfSay=null}presT+=dt;if(presT>.1){presT=0;sendPresence()}selfEmT=Math.max(0,selfEmT-dt);
+  updateUI();if(started&&!hero.dead&&mapIdx!==undefined)fxSpawn(wardrobe.fx,hero.x,hero.y,parts,14,dt);tickRemotes(dt);scoreT+=dt;if(scoreT>15){scoreT=0;pushScore()}if(sideT>0&&!modalKind){sideT-=dt;if(sideT<=0)sideOpen(false)}if(actT>0&&!modalKind){actT-=dt;if(actT<=0)actOpen(false)}for(const b of actEl.children)b.classList.toggle('on',b.dataset.p===hero.pose||(b.dataset.p==='fish'&&!!fish));setUI('tdot','display',(newItems>0||unread>0)&&!sideEl.classList.contains('open')?'block':'none');if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('show')}if(selfSay){selfSay.T-=dt;if(selfSay.T<=0)selfSay=null}presT+=dt;{const rs=Object.values(remotes),same=rs.some(Q=>Q.m===mapIdx),iv=same?.1:rs.length?.5:2;if(presT>iv){presT=0;sendPresence()}}selfEmT=Math.max(0,selfEmT-dt);
   if(paused||(trans&&!trans.done))return;
   const h=hero;tickWeather(dt);tickArena(dt);
   if(h.dead){h.deadT-=dt;if(h.deadT<=0){h.dead=false;h.hp=ST.maxHp;h.inv=1.5;h.face='down';if(mapIdx!==0)travel(0,'home');else{h.x=BASE.x+40;h.y=BASE.y+70}save()}}
@@ -2602,7 +2602,11 @@ function beginGame(d){
 
 decorate();devApplyBtn();genMap(0);setWeather('malam',true);renderMenu();applySettings();applyStatic();
 let last=performance.now();
-function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;lastDt=dt;try{update(dt);draw();drawPreview(dt);drawWardPreview(dt);drawProfPreview(dt);drawEnding(dt)}catch(e){console.error(e)}requestAnimationFrame(loop)}
+const PERF={t:0,n:0,good:0};
+function perfTick(raw){if(document.hidden||raw>.25)return;PERF.t+=raw;PERF.n++;if(PERF.t<2)return;const avg=PERF.t/PERF.n;PERF.t=0;PERF.n=0;
+  if(avg>.024&&QLV<QSC.length-1){QLV++;PERF.good=0;resize()}
+  else if(avg<.0175&&QLV>0){if(++PERF.good>=4){QLV--;PERF.good=0;resize()}}else PERF.good=0}
+function loop(now){const raw=(now-last)/1000,dt=Math.min(.05,raw);last=now;lastDt=dt;perfTick(raw);try{update(dt);draw();drawPreview(dt);drawWardPreview(dt);drawProfPreview(dt);drawEnding(dt)}catch(e){console.error(e)}requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 window.__g={hero,get res(){return res},get inv(){return inv},get eq(){return eq},get quest(){return quest},setQuest,set baseLv(v){baseLv=v;recalc()},makeItem,addItem,equip,recalc,openModal,travel,
