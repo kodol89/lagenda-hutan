@@ -516,11 +516,22 @@ const GPAL={stone:['#b7b2c2','#6f6a7d','#3d3947','#5ff0ff'],lava:['#8a5e52','#3e
 /* ================= SPRITES ================= */
 function sprite(w,h,ox,oy,fn){const S=2,cv=document.createElement('canvas');cv.width=w*S;cv.height=h*S;const c=cv.getContext('2d');c.scale(S,S);c.translate(ox,oy);fn(c);return cv}
 function makeTree(c1,c2,c3,sv,trunk){return sprite(120,140,60,130,c=>{
-  const t=trunk||['#4a2e19','#6e4728','#3d2414'];const tg=c.createLinearGradient(-6,0,6,0);tg.addColorStop(0,t[0]);tg.addColorStop(.5,t[1]);tg.addColorStop(1,t[2]);
-  c.fillStyle=tg;rr(c,-6,-38,12,40,4);c.fill();
-  for(const[x,y,r]of[[0,-58,32],[-23,-50,23],[23,-50,23],[-13,-80,23],[14,-82,21],[0,-98,17]]){const g=c.createRadialGradient(x-r*.35,y-r*.45,r*.1,x,y,r);g.addColorStop(0,c1);g.addColorStop(.6,c2);g.addColorStop(1,c3);c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,TAU);c.fill()}
-  let s2=sv||99;const q=()=>{s2=(s2*16807)%2147483647;return s2/2147483647};
-  c.fillStyle='rgba(255,255,220,.22)';for(let i=0;i<18;i++){c.beginPath();c.arc(-30+q()*50,-110+q()*55,2+q()*3,0,TAU);c.fill()}})}
+  // Batang bercabang dengan bentuk tidak simetri, bukan silinder ringkas.
+  const t=trunk||['#382317','#765033','#302016'];
+  const bark=c.createLinearGradient(-10,0,10,0);bark.addColorStop(0,t[0]);bark.addColorStop(.42,t[1]);bark.addColorStop(.72,t[2]);bark.addColorStop(1,t[0]);
+  c.fillStyle=bark;c.beginPath();c.moveTo(-7,1);c.quadraticCurveTo(-5,-22,-8,-43);c.lineTo(-3,-58);c.lineTo(1,-42);c.lineTo(5,-60);c.lineTo(8,-43);c.quadraticCurveTo(5,-20,9,1);c.closePath();c.fill();
+  c.strokeStyle=t[1];c.lineCap='round';c.lineWidth=5;c.beginPath();c.moveTo(0,-35);c.quadraticCurveTo(-13,-52,-27,-70);c.moveTo(2,-39);c.quadraticCurveTo(14,-56,27,-76);c.moveTo(-4,-48);c.lineTo(-12,-79);c.moveTo(5,-48);c.lineTo(13,-88);c.stroke();
+  let seed=sv||99;const q=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  const clusters=[[-25,-76,17],[-8,-91,22],[16,-94,21],[31,-75,16],[-27,-52,17],[-4,-62,25],[22,-57,21],[0,-111,14]];
+  // Siluet mahkota berlekuk dengan variasi saiz dan ton warna.
+  for(let n=0;n<clusters.length;n++){const [x,y,r]=clusters[n],g=c.createRadialGradient(x-r*.38,y-r*.48,2,x,y,r*1.18);g.addColorStop(0,c1);g.addColorStop(.58,c2);g.addColorStop(1,c3);c.fillStyle=g;c.beginPath();
+    const pts=13;for(let j=0;j<=pts;j++){const a=j/pts*TAU,rrr=r*(.78+q()*.32),px=x+Math.cos(a)*rrr,py=y+Math.sin(a)*rrr*.82;j?c.lineTo(px,py):c.moveTo(px,py)}c.closePath();c.fill();
+    c.strokeStyle='rgba(20,45,18,.16)';c.lineWidth=.8;c.stroke();
+  }
+  // Daun kecil berkelompok, urat dan tompok cahaya untuk tekstur kanopi.
+  for(let i=0;i<76;i++){const x=-43+q()*86,y=-121+q()*79,rrr=1+q()*2.2;c.fillStyle=i%4===0?'rgba(235,255,180,.42)':i%3===0?'rgba(12,55,20,.25)':'rgba(210,245,150,.24)';c.beginPath();c.ellipse(x,y,rrr*1.5,rrr*.72,q()*.9,0,TAU);c.fill()}
+  c.strokeStyle='rgba(35,20,12,.38)';c.lineWidth=1;c.beginPath();c.moveTo(-2,-3);c.lineTo(-1,-28);c.lineTo(-5,-39);c.moveTo(3,-7);c.lineTo(2,-27);c.lineTo(7,-41);c.stroke();
+})}
 function makeCactus(c1,c2){return sprite(120,140,60,130,c=>{
   const body=(x,y,w,h)=>{const g=c.createLinearGradient(x-w/2,0,x+w/2,0);g.addColorStop(0,c2);g.addColorStop(.45,c1);g.addColorStop(1,c2);c.fillStyle=g;rr(c,x-w/2,y-h,w,h,w/2);c.fill()};
   body(-26,-30,14,40);body(-17,-34,20,12);body(24,-48,13,34);body(15,-56,20,11);body(0,2,24,96);
@@ -1682,6 +1693,15 @@ function drawHero(h){
   if(CO.stars){ctx.fillStyle='#ffe08a';for(const[sx,sy]of[[-5,-25],[4,-13],[-8,-8],[7,-27],[1,-6]])circ(sx,sy,.9+.4*Math.sin(time*4+sx),'#ffe08a')}
   if(CO.samping&&cls!=='mage'){const sg=ctx.createLinearGradient(0,-19,0,-6);sg.addColorStop(0,CO.samping);sg.addColorStop(1,'#3a0810');ctx.fillStyle=sg;ctx.beginPath();ctx.moveTo(-12.5,-19);ctx.lineTo(12.5,-19);ctx.lineTo(13.5,-6);ctx.lineTo(-13.5,-6);ctx.closePath();ctx.fill();ctx.strokeStyle='#ffd23f';ctx.lineWidth=.8;for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(-13,-12+k*3.5);ctx.lineTo(13,-12+k*3.5);ctx.stroke()}}
   if(CO.noBelt){}else if(cls==='mage'&&!CO.uni){ctx.fillStyle=CO.trim||'#e8c25a';ctx.fillRect(-9,-20,18,3)}else{ctx.fillStyle=CO.belt||(CO.trim?aC[1]:'#6b4423');ctx.fillRect(-11.5,-18,23,3.5);ctx.fillStyle=CO.trim||'#f0c85a';ctx.fillRect(-2.2,-18.6,4.4,4.6)}
+  // Lapisan perincian armor: panel dada, jahitan, pelindung bahu dan kilau logam.
+  if(!CO.uni&&cls!=='mage'){
+    const metal=eq.armor?ARMOR_COL[eq.armor.rar][0]:(cls==='warrior'?'#c7d4e5':'#9b7849');
+    const mg=ctx.createLinearGradient(-10,-31,10,-15);mg.addColorStop(0,'rgba(255,255,255,.62)');mg.addColorStop(.35,metal);mg.addColorStop(1,'rgba(20,28,42,.7)');
+    ctx.fillStyle=mg;ctx.beginPath();ctx.moveTo(-8,-30);ctx.lineTo(-4,-33);ctx.lineTo(4,-33);ctx.lineTo(8,-29);ctx.lineTo(7,-20);ctx.lineTo(0,-17);ctx.lineTo(-7,-20);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='rgba(255,245,205,.72)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-5,-29);ctx.lineTo(-2,-31);ctx.lineTo(3,-31);ctx.moveTo(-5,-22);ctx.lineTo(0,-20);ctx.lineTo(5,-22);ctx.stroke();
+    for(const sx of [-10,10]){ctx.fillStyle=mg;ctx.beginPath();ctx.moveTo(sx-4,-31);ctx.quadraticCurveTo(sx,-36,sx+4,-31);ctx.lineTo(sx+3,-26);ctx.lineTo(sx,-24);ctx.lineTo(sx-3,-26);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.stroke()}
+    ctx.fillStyle='rgba(255,218,120,.9)';ctx.beginPath();ctx.moveTo(0,-29);ctx.lineTo(2,-26);ctx.lineTo(0,-23);ctx.lineTo(-2,-26);ctx.closePath();ctx.fill();
+  }
   // arms
   if(side){ctx.save();ctx.translate(1,-28);ctx.rotate(atk?-1.2:-sw*.6);ctx.fillStyle=CO.sleeve!==undefined?(CO.sleeve||'#f0c49c'):cls==='mage'?aC[0]:'#f0c49c';rr(ctx,-3,0,6,11,3);ctx.fill();circ(0,12,3.3,handC);ctx.restore()}
   else{ctx.fillStyle=CO.sleeve!==undefined?(CO.sleeve||'#f0c49c'):cls==='mage'?aC[0]:'#f0c49c';rr(ctx,-14,-29+sw*2,5,10,2.5);ctx.fill();rr(ctx,9,-29-sw*2,5,10,2.5);ctx.fill();circ(-11.5,-18+sw*2,3.2,handC);circ(11.5,-18-sw*2,3.2,handC)}
