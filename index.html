@@ -631,7 +631,7 @@ function nearPath(x,y,d){for(const p of paths)for(let i=0;i<p.length-1;i++)if(se
 function inW(w,x,y,pad){const a=(x-w.x)/(w.rx+pad),b=(y-w.y)/(w.ry+pad);return a*a+b*b<1}
 const inAnyWater=(x,y,pad)=>waters.some(w=>inW(w,x,y,pad));
 function blocked(x,y){
-  if(mapIdx===0&&(Math.hypot(x-VIL.x,y-VIL.y)<250||Math.hypot(x-BASE.x,y-BASE.y)<200||Math.hypot(x-BENCH.x,y-BENCH.y)<80))return true;
+  if(mapIdx===0&&(homeReserved(x,y)||Math.hypot(x-VIL.x,y-VIL.y)<250||Math.hypot(x-BASE.x,y-BASE.y)<200||Math.hypot(x-BENCH.x,y-BENCH.y)<80))return true;
   if(MERCH&&Math.hypot(x-MERCH.x,y-MERCH.y)<95)return true;
   for(const p of portals)if(Math.hypot(x-p.x,y-p.y)<170)return true;
   if(Math.hypot(x-entryW.x,y-entryW.y)<120||Math.hypot(x-entryE.x,y-entryE.y)<120)return true;
@@ -896,6 +896,9 @@ const DICT={
 'Multiplayer belum disambung. Tampal pautan':'Multiplayer not connected yet. Paste your','kamu di bawah (contoh:':'link below (example:','Sambung':'Connect','Salin Pautan Jemputan':'Copy Invite Link','Tukar pautan pangkalan data':'Change database link',
 'Tak dapat bersambung ke server Firebase. Semak internet atau pautan pangkalan data.':'Cannot connect to the Firebase server. Check your internet or database link.','Ranking perlukan sambungan Firebase. Tetapkan dalam menu 👥 Main Bersama.':'Ranking needs a Firebase connection. Set it up in the 👥 Play Together menu.',
 'Kongsi pautan game ini kepada kawan.':'Share this game link with friends.','Tekan':'Tap','dan hantar kepada kawan (pautan ini sudah ada sambungan server).':'and send it to friends (it includes the server connection).','Kawan buka pautan dan mula bermain dalam mod Multiplayer.':'Friends open the link and play in Multiplayer mode.',
+'Rumah Wira':'Hero House','Katil · Tidur':'Bed · Sleep','Meja Makan':'Dining Table','Tanam Herba':'Plant Herbs','Tuai Herba':'Harvest Herbs','Sedang Membesar':'Growing',
+'Nyawa sudah penuh':'Health already full','Tidur lena! Nyawa pulih 100%':'Good sleep! Health restored 100%','Tiada ikan. Pergi memancing dahulu!':'No fish. Go fishing first!','Kamu masih kenyang':'You are still full','Makan sedap! Ikan bakar':'Delicious grilled fish!',
+'Benih herba ditanam!':'Herb seeds planted!','Herba dituai! +1 🧪 Ubat':'Herbs harvested! +1 🧪 Potion',
 'MISI KAWASAN':'AREA MISSIONS','▲ Kamu   🔴 Musuh   💀 Bos   🔵 Pemain   🟡 Kawan   🌀 Portal':'▲ You   🔴 Enemy   💀 Boss   🔵 Player   🟡 Friend   🌀 Portal','Selesaikan Misi':'Complete Mission','Selesaikan misi kawasan untuk buka':'Complete the area mission to unlock','Belum dibuka':'Locked','Pergi ke kawasan ini untuk mula':'Go to this area to start','Langkah Misi Selesai':'Mission Step Complete','Ganjaran item menanti!':'Item reward awaits!',
 'Pancing ikan':'Catch fish','kelengkapan di Meja Kerja':'gear at the Workbench','Tewaskan':'Defeat','Kumpul':'Collect','Capai Tahap':'Reach Level','Tingkat':'Floor','Terbaik':'Best','Dibuka':'Unlocked','tamatkan Tingkat':'clear Floor','dahulu':'first','buka kawasan':'unlock area','kini terbuka':'now unlocked','gelombang':'waves',
 'Tingkat baru pertama kali: bonus':'First clear of a new floor: bonus','(15 TINGKAT)':'(15 FLOORS)',
@@ -985,6 +988,8 @@ const DICT={
 };
 /* ================= ICONS ================= */
 const ICP={
+food:'<path d="M3.5 12.5h17a8.5 8.5 0 0 1-17 0z"/><path d="M8 9c0-2 2-2 2-4M12 9c0-2 2-2 2-4M16 9c0-2 2-2 2-4"/>',
+sprout:'<path d="M12 21v-9"/><path d="M12 12C12 7 8 5 4 5c0 4 3 7 8 7zM12 10c0-4 3-6 8-6 0 4-3 6-8 6z"/><path d="M7 21h10"/>',
 wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3.5 17.2a1.8 1.8 0 0 0 2.5 2.5l5.8-5.8a4 4 0 0 0 5.1-5.4l-2.6 2.6-2.2-.4-.4-2.2z"/>',
 shirt:'<path d="M8.5 3.5 4 6l-2 5 3.2 1.4L6.5 10v10.5h11V10l1.3 2.4L22 11l-2-5-4.5-2.5c-.6 1.6-2 2.5-3.5 2.5S9.1 5.1 8.5 3.5z"/>',
 play:'<path d="M8 4.5l11.5 7.5L8 19.5z" fill="currentColor"/>',
@@ -1070,11 +1075,11 @@ function lockReason(k){if(k===0)return'';if(!mqDone(k-1))return`Selesaikan Misi 
 
 /* ================= SAVE ================= */
 const SK='legenda_hutan_seri_v3';
-function save(){if(!started)return;try{localStorage.setItem(SK,JSON.stringify({nick,cls,gender,lvl:hero.lvl,xp:hero.xp,hp:hero.hp,res,inv,eq,baseLv,crafted,quest,itemSeq,bossDown,playT,arenaClears,ward:wardrobe,mq,dun:dunBest,mapIdx:mapIdx===AI?0:mapIdx}))}catch(e){}}
+function save(){if(!started)return;try{localStorage.setItem(SK,JSON.stringify({nick,cls,gender,lvl:hero.lvl,xp:hero.xp,hp:hero.hp,res,inv,eq,baseLv,crafted,quest,itemSeq,bossDown,playT,arenaClears,home,ward:wardrobe,mq,dun:dunBest,mapIdx:mapIdx===AI?0:mapIdx}))}catch(e){}}
 function getSave(){try{return JSON.parse(localStorage.getItem(SK))}catch(e){return null}}
 function load(d){
   cls=d.cls||'warrior';gender=d.gender||'m';nick=d.nick||'';hero.lvl=d.lvl;hero.xp=d.xp;res=Object.assign(res,d.res);inv=d.inv||[];eq=Object.assign(eq,d.eq);baseLv=d.baseLv||1;crafted=d.crafted||0;
-  quest=Object.assign(quest,d.quest);itemSeq=d.itemSeq||itemSeq;bossDown=(d.bossDown||bossDown).slice();while(bossDown.length<MAPS.length)bossDown.push(0);playT=d.playT||0;arenaClears=d.arenaClears||0;mq=(d.mq&&typeof d.mq==='object')?d.mq:{};if(!d.mq)for(let m=1;m<MAPS.length;m++)if(bossDown[m])mq[m]={s:4,c:0,b:0,done:1,seen:1};dunBest=d.dun|0;for(let m=1;m<MAPS.length;m++){const q=mq[m];if(q&&!q.seen&&bossDown[m])q.seen=1}wardrobe=WD0();if(d.ward&&typeof d.ward==='object'){const w=d.ward;if(Array.isArray(w.own))wardrobe.own=[...new Set([...wardrobe.own,...w.own.filter(x=>typeof x==='string')])];if(w.cos)for(const k in wardrobe.cos)if(wardrobe.own.includes(w.cos[k]))wardrobe.cos[k]=w.cos[k];if(wardrobe.own.includes(w.hair))wardrobe.hair=w.hair;if(wardrobe.own.includes(w.fx))wardrobe.fx=w.fx;if(wardrobe.own.includes(w.hs))wardrobe.hs=w.hs}recalc();hero.hp=Math.max(1,Math.min(ST.maxHp,d.hp||ST.maxHp));return d.mapIdx||0}
+  quest=Object.assign(quest,d.quest);itemSeq=d.itemSeq||itemSeq;bossDown=(d.bossDown||bossDown).slice();while(bossDown.length<MAPS.length)bossDown.push(0);playT=d.playT||0;arenaClears=d.arenaClears||0;home={p:[0,1,2].map(i=>{const q=d.home&&Array.isArray(d.home.p)&&d.home.p[i];return q&&typeof q==='object'?{s:q.s?1:0,t:+q.t||0}:{s:0,t:0}})};mq=(d.mq&&typeof d.mq==='object')?d.mq:{};if(!d.mq)for(let m=1;m<MAPS.length;m++)if(bossDown[m])mq[m]={s:4,c:0,b:0,done:1,seen:1};dunBest=d.dun|0;for(let m=1;m<MAPS.length;m++){const q=mq[m];if(q&&!q.seen&&bossDown[m])q.seen=1}wardrobe=WD0();if(d.ward&&typeof d.ward==='object'){const w=d.ward;if(Array.isArray(w.own))wardrobe.own=[...new Set([...wardrobe.own,...w.own.filter(x=>typeof x==='string')])];if(w.cos)for(const k in wardrobe.cos)if(wardrobe.own.includes(w.cos[k]))wardrobe.cos[k]=w.cos[k];if(wardrobe.own.includes(w.hair))wardrobe.hair=w.hair;if(wardrobe.own.includes(w.fx))wardrobe.fx=w.fx;if(wardrobe.own.includes(w.hs))wardrobe.hs=w.hs}recalc();hero.hp=Math.max(1,Math.min(ST.maxHp,d.hp||ST.maxHp));return d.mapIdx||0}
 function wipe(){try{localStorage.removeItem(SK)}catch(e){}}
 
 /* ================= QUESTS ================= */
@@ -1322,8 +1327,9 @@ function doPose(p){if(!started||D||modalKind||hero.dead||trans)return;
 const nearElder=()=>mapIdx===0&&Math.hypot(hero.x-ELDER.x,hero.y-ELDER.y)<85;
 const nearBench=()=>mapIdx===0&&Math.hypot(hero.x-BENCH.x,hero.y-BENCH.y)<75;
 const fishWater=()=>waters.find(w=>(w.kind==='water'||w.kind==='ice'||w.kind==='swamp')&&inW(w,hero.x,hero.y,48));
-function ctxKind(){if(hero.dead)return null;if(fish)return fish.phase==='bite'?'bite':'wait';if(nearElder())return'talk';if(nearBench())return'bench';if(SMITH&&Math.hypot(hero.x-SMITH.x,hero.y-SMITH.y)<85)return'smith';if(MERCH&&Math.hypot(hero.x-MERCH.x,hero.y-MERCH.y)<85)return'shop';if(fishWater())return'fish';return null}
+function ctxKind(){if(hero.dead)return null;if(fish)return fish.phase==='bite'?'bite':'wait';if(nearElder())return'talk';if(nearBench())return'bench';{const hk=homeCtx();if(hk)return hk}if(SMITH&&Math.hypot(hero.x-SMITH.x,hero.y-SMITH.y)<85)return'smith';if(MERCH&&Math.hypot(hero.x-MERCH.x,hero.y-MERCH.y)<85)return'shop';if(fishWater())return'fish';return null}
 function doCtx(){if(!started||D||modalKind||trans)return;const k=ctxKind();
+  if(['sleep','eat','plant','grow','harvest'].includes(k)){homeAct(k);return}
   if(k==='talk')talkElder();else if(k==='bench')openModal('bench');else if(k==='smith')openModal('smith');else if(k==='shop')openModal('shop');else if(k==='fish')startFish();else if(k==='bite')catchFish();
   else if(k==='wait'){fl(hero.x,hero.y-60,'Terlalu awal! Ikan lari...','#ffb3b3');fish=null}}
 
@@ -1489,6 +1495,7 @@ function collide(e,r){
   if(mapIdx===0){
     const cx=clamp(e.x,HOUSE.x1,HOUSE.x2),cy=clamp(e.y,HOUSE.y1,HOUSE.y2),dx=e.x-cx,dy=e.y-cy,d=Math.hypot(dx,dy);
     if(d<r){if(d>0){e.x=cx+dx/d*r;e.y=cy+dy/d*r}else e.y=HOUSE.y2+r}
+    homeCollide(e,r);
     for(const o of[ELDER,BENCH]){const ex=e.x-o.x,ey=e.y-o.y,ed=Math.hypot(ex,ey),m=r+(o===BENCH?18:12);if(ed<m&&ed>0){e.x=o.x+ex/ed*m;e.y=o.y+ey/ed*m}}
   }
 }
@@ -1609,7 +1616,7 @@ function updateUI(){
   setUI('qhead','text',`${M.ic} ${tr(M.n).toUpperCase()} · ${WX[weather.type][0]}`);setUI('qtx','text',tr(questText()));
   setUI('bagdot','display',newItems>0?'block':'none');
   const k=!D&&!modalKind?ctxKind():null,ce=$('ctx');
-  setUI('ctx','html',icon({talk:'chat',bench:'hammer',smith:'hammer',shop:'cart',fish:'rod',wait:'rod',bite:'alert'}[k]||'chat'));setUI('atk','html',icon(ATKIC[cls]));ce.classList.toggle('show',!!k);ce.classList.toggle('bite',k==='bite');
+  setUI('ctx','html',icon({talk:'chat',bench:'hammer',smith:'hammer',shop:'cart',fish:'rod',wait:'rod',bite:'alert',sleep:'bed',eat:'food',plant:'sprout',grow:'sprout',harvest:'sprout'}[k]||'chat'));setUI('atk','html',icon(ATKIC[cls]));ce.classList.toggle('show',!!k);ce.classList.toggle('bite',k==='bite');
   for(let i=0;i<3;i++){const id='s'+(i+1),c=skCd[i];$(id).classList.toggle('cd',c>0);setUI(id,'html',`${icon(SKILLS[cls][i].sv)}<b>${c>0?Math.ceil(c):''}</b>`)}
   const pc=Object.keys(remotes).length;setUI('pdot','text',pc?String(pc):'');setUI('pdot','display',pc?'block':'none');
 }
@@ -2431,6 +2438,7 @@ function draw(){
   if(mapIdx===0){
     if(inV(HOUSE.x,HOUSE.y,160))L.push({y:HOUSE.y,f:drawHouse});
     L.push({y:960,f:()=>drawSign(760,960,'HUTAN ➜')},{y:ELDER.y,f:drawElder},{y:BENCH.y,f:drawBench},{y:BASE.y+20,f:drawCampfire});
+    homeDrawables(L,inV);
     if(inV(BASE.x,BASE.y,260)){
       if(baseLv>=2)for(let k=0;k<FENCE.length;k++)L.push({y:FENCE[k].y,f:()=>drawFencePost(k)});
       if(baseLv===2)L.push({y:BASE.y-30,f:drawTent});if(baseLv>=3)L.push({y:BASE.y-28,f:drawCabin},{y:BASE.y+42,f:drawCrates});
@@ -3104,7 +3112,7 @@ function drawMini(){if(!started||SET.mini===false||!WW){miniEl.style.display='no
   const key=mapIdx+':'+W2+':'+trees.length+':'+waters.length;if(key!==miniKey){miniKey=key;miniStatic=miniBuildStatic(W2,H2)}
   const g=mctx,sx=W2/WW,sy=H2/WH,k=big?1.9:1;g.clearRect(0,0,W2,H2);g.drawImage(miniStatic,0,0);
   for(const p of portals){const ok=p.exit||canEnter(p.to);miniPin(g,p.x*sx,p.y*sy,5*k,ok?'#7fe6ff':'#8a8a96',ok?'':'🔒');if(big&&!p.exit&&MAPS[p.to]){g.font='bold 11px Nunito,sans-serif';g.fillStyle='#fff';g.textAlign='center';g.fillText(MAPS[p.to].ic+' '+MAPS[p.to].n,p.x*sx,p.y*sy-14)}}
-  if(mapIdx===0){miniPin(g,BASE.x*sx,BASE.y*sy,5*k,'#ff9a3a','');miniPin(g,ELDER.x*sx,ELDER.y*sy,4*k,'#ffe08a','')}
+  if(mapIdx===0){g.fillStyle='#c94a32';g.fillRect(HOME.x1*sx,HOME.y1*sy,(HOME.x2-HOME.x1)*sx,(HOME.y2-HOME.y1)*sy);miniPin(g,BASE.x*sx,BASE.y*sy,5*k,'#ff9a3a','');miniPin(g,ELDER.x*sx,ELDER.y*sy,4*k,'#ffe08a','')}
   if(MERCH)miniPin(g,MERCH.x*sx,MERCH.y*sy,4*k,'#ffd23f','');if(SMITH)miniPin(g,SMITH.x*sx,SMITH.y*sy,4*k,'#c0c8d8','');
   for(const e of enemies){if(e.dead)continue;if(e.boss){const pu=1+.25*Math.sin(time*6);miniPin(g,e.x*sx,e.y*sy,6*k*pu,'#ff2d3a',big?'💀':'')}else{g.fillStyle='#ff6a5a';g.fillRect(e.x*sx-1.5*k,e.y*sy-1.5*k,3*k,3*k)}}
   for(const Q of Object.values(remotes)){if(Q.m!==mapIdx)continue;miniPin(g,Q.x*sx,Q.y*sy,3.5*k,isFriend(Q.u)?'#ffd979':'#5ad8ff','')}
@@ -3125,6 +3133,105 @@ miniEl.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation()
 document.addEventListener('pointerdown',e=>{if(miniBig&&!miniEl.contains(e.target)){miniBig=false;miniEl.classList.remove('big');miniShow(4);miniKey='';layoutMini();drawMini()}},true);
 function miniTick(dt){if(!miniBig&&miniOpenT>0){miniOpenT-=dt;if(miniOpenT<=0)layoutMini()}miniT+=dt;miniLayT+=dt;if(miniLayT>.4){miniLayT=0;layoutMini()}if(miniOpenT<=0&&!miniBig)return;if(miniT>=(miniBig?.05:.1)){miniT=0;drawMini()}}
 
+/* ================= RUMAH WIRA (home, bed, table, garden) ================= */
+const HOME={x:380,y:1480,x1:262,x2:498,y1:1400,y2:1552,dw:58};HOME.dl=HOME.x-HOME.dw/2;HOME.dr=HOME.x+HOME.dw/2;
+const HBED={x:HOME.x1+48,y:HOME.y1+40,w:62,h:40},HTAB={x:HOME.x2-70,y:HOME.y1+50,w:66,h:42};
+const PLOTS=[{x:612,y:1438},{x:690,y:1438},{x:651,y:1510}],GROW_MS=90000;
+const HOME_PATH=[[452,1250],[548,1372],[566,1600],[380,1600],[380,1560]];
+let home={p:[{s:0,t:0},{s:0,t:0},{s:0,t:0}]},roofA=1;
+const inHome=(x,y)=>mapIdx===0&&x>HOME.x1&&x<HOME.x2&&y>HOME.y1-6&&y<HOME.y2;
+const homeReserved=(x,y)=>x>190&&x<810&&y>1250&&y<1780;
+function plotStage(p){if(!p.s)return 0;return Date.now()-p.t>=GROW_MS?2:1}
+function nearRect(o,d){return Math.hypot(hero.x-o.x,hero.y-(o.y+o.h/2))<d}
+function homeCtx(){if(mapIdx!==0)return null;
+  if(nearRect(HBED,58))return'sleep';if(nearRect(HTAB,58))return'eat';
+  for(let i=0;i<PLOTS.length;i++){const p=PLOTS[i];if(Math.hypot(hero.x-p.x,hero.y-p.y)<48){homeCtx.i=i;const st=plotStage(home.p[i]);return st===0?'plant':st===2?'harvest':'grow'}}return null}
+function homeAct(k){const i=homeCtx.i,P=home.p[i];
+  if(k==='sleep'){if(hero.hp>=ST.maxHp){fl(hero.x,hero.y-60,tr('Nyawa sudah penuh'),'#cfe8ff');return}hero.hp=ST.maxHp;fl(hero.x,hero.y-60,tr('Tidur lena! Nyawa pulih 100%'),'#9ff3ff');sfx.get();
+    for(let k2=0;k2<14;k2++)parts.push({x:HBED.x+R(-20,20),y:HBED.y+R(0,20),vx:R(-20,20),vy:R(-60,-20),life:1,max:1,col:'#bfe8ff',size:R(1.5,3),g:0})}
+  else if(k==='eat'){if(res.ikan<=0){fl(hero.x,hero.y-60,tr('Tiada ikan. Pergi memancing dahulu!'),'#ffb3b3');return}
+    if(hero.hp>=ST.maxHp){fl(hero.x,hero.y-60,tr('Kamu masih kenyang'),'#cfe8ff');return}res.ikan--;heal(.6);fl(hero.x,hero.y-80,tr('Makan sedap! Ikan bakar'),'#ffd979')}
+  else if(k==='plant'){P.s=1;P.t=Date.now();fl(PLOTS[i].x,PLOTS[i].y-40,tr('Benih herba ditanam!'),'#9dff8a');sfx.get();save()}
+  else if(k==='grow'){const left=Math.ceil((GROW_MS-(Date.now()-P.t))/1000);fl(PLOTS[i].x,PLOTS[i].y-40,`🌱 ${left}s`,'#d8ffb0')}
+  else if(k==='harvest'){P.s=0;P.t=0;res.ubat++;addRes('coin',8,PLOTS[i].x,PLOTS[i].y-20);gainXP(6);fl(PLOTS[i].x,PLOTS[i].y-50,tr('Herba dituai! +1 🧪 Ubat'),'#ffd979');sfx.get();save()}}
+function pushRect(e,r,x1,y1,x2,y2){const cx=clamp(e.x,x1,x2),cy=clamp(e.y,y1,y2),dx=e.x-cx,dy=e.y-cy,d=Math.hypot(dx,dy);
+  if(d<r){if(d>0){e.x=cx+dx/d*r;e.y=cy+dy/d*r}else{const l=e.x-x1,rr2=x2-e.x,t=e.y-y1,b=y2-e.y,m=Math.min(l,rr2,t,b);if(m===l)e.x=x1-r;else if(m===rr2)e.x=x2+r;else if(m===t)e.y=y1-r;else e.y=y2+r}}}
+function homeCollide(e,r){const H2=HOME;
+  pushRect(e,r,H2.x1-6,H2.y1-14,H2.x2+6,H2.y1+2);pushRect(e,r,H2.x1-8,H2.y1-14,H2.x1+4,H2.y2+4);pushRect(e,r,H2.x2-4,H2.y1-14,H2.x2+8,H2.y2+4);
+  pushRect(e,r,H2.x1-8,H2.y2-4,H2.dl,H2.y2+6);pushRect(e,r,H2.dr,H2.y2-4,H2.x2+8,H2.y2+6);
+  pushRect(e,r*.6,HBED.x-HBED.w/2,HBED.y,HBED.x+HBED.w/2,HBED.y+HBED.h);pushRect(e,r*.6,HTAB.x-HTAB.w/2,HTAB.y+8,HTAB.x+HTAB.w/2,HTAB.y+HTAB.h)}
+/* ---- drawing ---- */
+function planks(x,y,w,h,c1,c2){const g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,c1);g.addColorStop(1,c2);ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+  ctx.strokeStyle='rgba(60,32,10,.35)';ctx.lineWidth=1;for(let yy=y+12;yy<y+h;yy+=12){ctx.beginPath();ctx.moveTo(x,yy);ctx.lineTo(x+w,yy);ctx.stroke()}
+  for(let yy=y,k=0;yy<y+h;yy+=12,k++)for(let xx=x+(k%2?20:44);xx<x+w;xx+=56){ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx,Math.min(y+h,yy+12));ctx.stroke()}}
+function drawHomeGround(){const H2=HOME;ctx.save();
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#a9835a';ctx.lineWidth=44;ctx.beginPath();HOME_PATH.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();
+  ctx.strokeStyle='#d2b184';ctx.lineWidth=34;ctx.stroke();
+  // garden fence area
+  ctx.fillStyle='rgba(90,60,30,.25)';rr(ctx,578,1398,150,160,18);ctx.fill();
+  for(const p of PLOTS){ctx.fillStyle='#6b4423';rr(ctx,p.x-30,p.y-22,60,44,8);ctx.fill();ctx.fillStyle='#4a2e16';rr(ctx,p.x-25,p.y-17,50,34,6);ctx.fill();
+    ctx.strokeStyle='rgba(30,15,5,.45)';ctx.lineWidth=2;for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(p.x-21,p.y+k*10);ctx.lineTo(p.x+21,p.y+k*10);ctx.stroke()}}
+  // floor
+  ell(H2.x,H2.y2+6,H2.x2-H2.x+20,14,'rgba(0,0,0,.22)');
+  planks(H2.x1,H2.y1-4,H2.x2-H2.x1,H2.y2-H2.y1+4,'#c98f52','#a9703a');
+  // rug
+  ctx.fillStyle='#8a2432';rr(ctx,H2.x-52,H2.y1+70,104,58,10);ctx.fill();ctx.strokeStyle='#ffd27a';ctx.lineWidth=2.5;rr(ctx,H2.x-46,H2.y1+76,92,46,7);ctx.stroke();
+  ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.moveTo(H2.x,H2.y1+86);ctx.lineTo(H2.x+12,H2.y1+99);ctx.lineTo(H2.x,H2.y1+112);ctx.lineTo(H2.x-12,H2.y1+99);ctx.closePath();ctx.fill();
+  // door mat
+  ctx.fillStyle='#6e5a3a';rr(ctx,H2.x-24,H2.y2-2,48,14,4);ctx.fill();
+  ctx.restore()}
+function wallFace(x1,x2,yb,hgt,alpha){ctx.save();ctx.globalAlpha=alpha;
+  for(let k=0;k<5;k++){const y=yb-(k+1)*hgt/5,g=ctx.createLinearGradient(0,y,0,y+hgt/5);g.addColorStop(0,'#b07a44');g.addColorStop(1,'#73491f');ctx.fillStyle=g;rr(ctx,x1,y,x2-x1,hgt/5,4);ctx.fill()}
+  ctx.restore()}
+function drawHomeBack(){const H2=HOME,in_=inHome(hero.x,hero.y);ctx.save();
+  wallFace(H2.x1-6,H2.x2+6,H2.y1,52,1);
+  // window with light
+  const wx=H2.x+40,wy=H2.y1-40;ctx.fillStyle='#4a2c14';rr(ctx,wx-17,wy-2,34,26,3);ctx.fill();ctx.fillStyle=in_||curTheme&&TH&&TH.night?'#ffd77a':'#9fd6ff';rr(ctx,wx-14,wy+1,28,20,2);ctx.fill();
+  ctx.strokeStyle='#4a2c14';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(wx,wy+1);ctx.lineTo(wx,wy+21);ctx.moveTo(wx-14,wy+11);ctx.lineTo(wx+14,wy+11);ctx.stroke();
+  // shelf + lamp
+  ctx.fillStyle='#5e3a1a';ctx.fillRect(H2.x-80,H2.y1-30,48,5);circ(H2.x-70,H2.y1-35,4,'#c0392b');circ(H2.x-56,H2.y1-35,4,'#2e86de');circ(H2.x-43,H2.y1-35,4,'#27ae60');
+  // side walls
+  for(const x of[H2.x1-6,H2.x2-4]){const g=ctx.createLinearGradient(x,0,x+10,0);g.addColorStop(0,'#8a5a2b');g.addColorStop(1,'#5a3615');ctx.fillStyle=g;ctx.fillRect(x,H2.y1-52,10,H2.y2-H2.y1+52)}
+  ctx.restore()}
+function drawBedH(){const b=HBED,x=b.x-b.w/2,y=b.y;ctx.save();ell(b.x,y+b.h+2,b.w/2+4,6,'rgba(0,0,0,.25)');
+  ctx.fillStyle='#6b4423';rr(ctx,x-3,y-14,b.w+6,b.h+16,5);ctx.fill();ctx.fillStyle='#3d7ec9';rr(ctx,x,y-4,b.w,b.h,5);ctx.fill();
+  ctx.fillStyle='#5aa0e8';rr(ctx,x,y+12,b.w,b.h-16,5);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1.2;for(let k=1;k<4;k++){ctx.beginPath();ctx.moveTo(x+k*b.w/4,y+14);ctx.lineTo(x+k*b.w/4,y+b.h-6);ctx.stroke()}
+  ctx.fillStyle='#fffaf0';rr(ctx,x+6,y-6,b.w-12,14,6);ctx.fill();ctx.fillStyle='#8a5a2b';rr(ctx,x-4,y-22,b.w+8,12,4);ctx.fill();
+  if(nearRect(HBED,58))label(b.x,y-34,'🛏️ Katil · Tidur');ctx.restore()}
+function drawTableH(){const t=HTAB,x=t.x-t.w/2,y=t.y;ctx.save();ell(t.x,y+t.h+3,t.w/2+6,7,'rgba(0,0,0,.25)');
+  ctx.fillStyle='#5e3a1a';for(const lx of[x+5,x+t.w-9])ctx.fillRect(lx,y+16,4,t.h-14);
+  ctx.fillStyle='#8d5524';rr(ctx,x,y,t.w,24,5);ctx.fill();ctx.fillStyle='#a8692e';rr(ctx,x+3,y+2,t.w-6,10,4);ctx.fill();
+  ell(t.x,y+8,13,7,'#f4f1e8');ell(t.x,y+7,9,4.5,'#e8a54a');ctx.fillStyle='#c8682a';ctx.beginPath();ctx.ellipse(t.x,y+6,6,2.5,0,0,TAU);ctx.fill();
+  circ(t.x-22,y+8,4,'#d94b3a');circ(t.x+22,y+6,4,'#ffe066');
+  for(const sx of[x-8,x+t.w+8]){ctx.fillStyle='#6b4423';rr(ctx,sx-7,y+18,14,12,3);ctx.fill()}
+  if(nearRect(HTAB,58))label(t.x,y-14,`🍽️ Meja Makan · 🐟${res.ikan}`);ctx.restore()}
+function drawHomeFront(){const H2=HOME,in_=inHome(hero.x,hero.y),a=in_?.28:1;
+  wallFace(H2.x1-6,H2.dl,H2.y2+4,44,a);wallFace(H2.dr,H2.x2+6,H2.y2+4,44,a);
+  ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#4a2c14';ctx.fillRect(H2.dl-5,H2.y2-48,6,52);ctx.fillRect(H2.dr-1,H2.y2-48,6,52);ctx.fillRect(H2.dl-5,H2.y2-52,H2.dw+10,7);ctx.restore()}
+function drawHomeRoof(){const H2=HOME,in_=inHome(hero.x,hero.y);roofA+=((in_?.1:1)-roofA)*Math.min(1,lastDt*8);if(roofA<.02)return;
+  ctx.save();ctx.globalAlpha=roofA;const L=H2.x1-20,Rr=H2.x2+20,top=H2.y1-104,eave=H2.y2-40,mid=H2.y1-50;
+  ctx.fillStyle='#7a2a1c';ctx.beginPath();ctx.moveTo(L,mid+16);ctx.lineTo(H2.x,top);ctx.lineTo(Rr,mid+16);ctx.lineTo(Rr,eave);ctx.lineTo(L,eave);ctx.closePath();ctx.fill();
+  const g=ctx.createLinearGradient(0,top,0,eave);g.addColorStop(0,'#c94a32');g.addColorStop(1,'#8e2f1e');ctx.fillStyle=g;
+  ctx.beginPath();ctx.moveTo(L+6,mid+18);ctx.lineTo(H2.x,top+8);ctx.lineTo(Rr-6,mid+18);ctx.lineTo(Rr-6,eave-6);ctx.lineTo(L+6,eave-6);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(60,15,8,.45)';ctx.lineWidth=2;for(let y=mid+34;y<eave-8;y+=16){ctx.beginPath();ctx.moveTo(L+8,y);ctx.lineTo(Rr-8,y);ctx.stroke()}
+  for(let y=mid+34,k=0;y<eave-8;y+=16,k++)for(let x=L+(k%2?14:30);x<Rr-8;x+=32){ctx.beginPath();ctx.moveTo(x,y-16);ctx.lineTo(x,y);ctx.stroke()}
+  ctx.strokeStyle='#5a1e12';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(L,mid+16);ctx.lineTo(H2.x,top);ctx.lineTo(Rr,mid+16);ctx.stroke();
+  ctx.fillStyle='#7d838f';ctx.fillRect(H2.x2-60,top+18,22,40);ctx.fillStyle='#5d636f';ctx.fillRect(H2.x2-64,top+14,30,8);
+  ctx.fillStyle='#ffe9b0';ctx.font='900 15px Cinzel,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=4;ctx.strokeStyle='#3a1a00';
+  const t=tr('Rumah Wira');ctx.strokeText(t,H2.x,(mid+eave)/2+8);ctx.fillText(t,H2.x,(mid+eave)/2+8);ctx.restore()}
+function drawPlot(i){const p=PLOTS[i],P=home.p[i],st=plotStage(P);ctx.save();ctx.translate(p.x,p.y);
+  if(st>=1){const k=st===2?1:Math.min(1,(Date.now()-P.t)/GROW_MS),sw=Math.sin(time*2+i)*.08;
+    for(const[dx,dy]of[[-12,-4],[0,4],[12,-4]]){ctx.save();ctx.translate(dx,dy);ctx.rotate(sw);const h2=6+k*16;
+      ctx.strokeStyle='#3a8a2a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-h2);ctx.stroke();
+      ctx.fillStyle=st===2?'#4fbf3f':'#8ee860';for(const s of[-1,1]){ctx.beginPath();ctx.ellipse(s*4,-h2*.6,4+k*2,2+k,s*.6,0,TAU);ctx.fill()}
+      if(st===2){circ(0,-h2-3,4,'#ff6aa8');circ(0,-h2-3,1.6,'#ffe066')}ctx.restore()}
+    if(st===1){ctx.fillStyle='rgba(0,0,0,.5)';rr(ctx,-22,18,44,5,2);ctx.fill();ctx.fillStyle='#8ee860';rr(ctx,-22,18,44*k,5,2);ctx.fill()}
+    else{const b=Math.sin(time*4)*2;ctx.font='16px sans-serif';ctx.textAlign='center';ctx.fillText('✨',0,-34+b)}}
+  ctx.restore();if(Math.hypot(hero.x-p.x,hero.y-p.y)<48)label(p.x,p.y-44,st===0?'🌱 Tanam Herba':st===2?'🌿 Tuai Herba':'⏳ Sedang Membesar')}
+function homeDrawables(L,inV){if(mapIdx!==0||!inV(HOME.x,HOME.y,320))return;const H2=HOME;
+  L.push({y:1240,f:drawHomeGround},{y:H2.y1,f:drawHomeBack},{y:HBED.y+HBED.h,f:drawBedH},{y:HTAB.y+HTAB.h,f:drawTableH},{y:H2.y2+4,f:drawHomeFront},{y:H2.y2+5,f:drawHomeRoof});
+  PLOTS.forEach((p,i)=>L.push({y:p.y+20,f:()=>drawPlot(i)}))}
+
 /* ================= CHARACTER CREATION ================= */
 const pvc=$('pv'),pctx=pvc.getContext('2d');let pvFace=0;
 const pvHero={x:0,y:0,face:'down',walkT:0,moving:true,atkT:0,spinT:0,aim:0,inv:0,dead:false};
@@ -3141,7 +3248,7 @@ function drawPreview(dt){if($('create').style.display!=='flex')return;pvFace+=dt
 $('go').addEventListener('click',()=>{$('create').style.display='none';beginGame(null)});
 function beginGame(d){
   initAudio();document.body.classList.add('ingame');setTimeout(()=>{sideOpen(true);actOpen(true)},400);
-  let m=0;if(d)m=load(d);else{wipe();wardrobe=WD0();mq={};dunBest=0;dunSel=1;recalc();hero.hp=ST.maxHp}
+  let m=0;if(d)m=load(d);else{wipe();wardrobe=WD0();home={p:[{s:0,t:0},{s:0,t:0},{s:0,t:0}]};mq={};dunBest=0;dunSel=1;recalc();hero.hp=ST.maxHp}
   started=true;genMap(m);
   if(m===0){hero.x=d?BASE.x+40:600;hero.y=d?BASE.y+70:990}else{hero.x=entryW.x;hero.y=entryW.y}
   hero.inv=1;setTimeout(()=>banner(`${M.ic} ${M.n}`,d?'Selamat kembali!':'Bercakap dengan Tok Penghulu',2.8),300);save();
