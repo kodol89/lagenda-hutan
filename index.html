@@ -1746,9 +1746,63 @@ function drawWeaponArm(h,handC){
   const limb=(a,b,w,c)=>{ctx.strokeStyle=shade(c,.62);ctx.lineWidth=w+1.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()};
   ctx.save();limb(shoulder,elbow,7,sleeve);limb(elbow,P,5.8,handC||'#f0c49c');
   ctx.fillStyle=eq.gloves?ARMOR_COL[eq.gloves.rar][1]:'#805a3a';ctx.beginPath();ctx.arc(P.x,P.y,3.6,0,TAU);ctx.fill();
-  if(kind==='archer'&&P.attacking&&P.p<.68){const pull=9*Math.sin(Math.PI*P.p/.68),off={x:P.x-pull,y:P.y},sh={x:-8.5,y:-27.5},el={x:(sh.x+off.x)*.52,y:(sh.y+off.y)*.52-3};limb(sh,el,6.2,sleeve);limb(el,off,4.8,handC||'#f0c49c');ctx.fillStyle=handC||'#f0c49c';ctx.beginPath();ctx.ellipse(off.x,off.y,3.1,3.5,0,0,TAU);ctx.fill()}
   ctx.restore();
 }
+function drawOffArm(h,handC){
+  // Lengan kedua sentiasa dilukis. Kedudukannya berubah sedikit mengikut kelas,
+  // tetapi kekal bersambung dari bahu -> siku -> tapak tangan.
+  const kind=cls==='warrior'?'warrior':cls==='mage'?'mage':'archer';
+  const f=h.face||'down', side=f==='left'||f==='right';
+  const sleeve=cls==='mage'?(curCos().sleeve||curCos().body?.[0]||'#7553b8'):
+    (eq.armor?ARMOR_COL[eq.armor.rar][0]:(cls==='archer'?'#6d9b45':'#777b86'));
+  const skin=handC||'#f0c49c';
+  const walk=h.moving?Math.sin(h.walkT)*1.35:Math.sin(time*2.1)*.35;
+  let shoulder={x:-8.5,y:-28};
+  let elbow,hand;
+  if(kind==='warrior'){
+    elbow={x:-12.2+walk,y:-21.5}; hand={x:-11.5+walk,y:-15.8};
+  }else if(kind==='mage'){
+    // Tangan bebas ahli sihir terangkat sedikit seolah mengawal mantera/buku.
+    elbow={x:-13+walk,y:-24}; hand={x:-15+walk,y:-20.5};
+  }else{
+    // Tangan kiri pemanah berada berhampiran tali busur; ketika menyerang ia menarik tali.
+    const P=weaponGripPose(h,'archer');
+    const pull=P.attacking&&P.p<.68?9*Math.sin(Math.PI*P.p/.68):0;
+    hand={x:-4.5-pull,y:-18.5};
+    elbow={x:-10.5-pull*.48+walk,y:-23.5};
+  }
+  const limb=(a,b,w,c)=>{
+    ctx.strokeStyle=shade(c,.58);ctx.lineWidth=w+1.8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(a.x-1,b.y-1);ctx.lineTo(b.x-1,b.y-1);ctx.stroke();
+  };
+  ctx.save();
+  limb(shoulder,elbow,6.8,sleeve);
+  limb(elbow,hand,5.3,skin);
+  // Manset kecil untuk menyatukan lengan dengan tangan.
+  ctx.fillStyle=eq.gloves?ARMOR_COL[eq.gloves.rar][1]:'#76543a';
+  rr(ctx,hand.x-3.1,hand.y-2.5,6.2,3.2,1.2);ctx.fill();
+  ctx.fillStyle=skin;
+  if(kind==='archer'&&h.atkT>0){
+    // Tapak tangan menghadap ke tali busur, ibu jari dan jari menutup tali.
+    ctx.beginPath();ctx.ellipse(hand.x,hand.y,3.1,3.7,-.18,0,TAU);ctx.fill();
+    ctx.strokeStyle='rgba(112,67,43,.7)';ctx.lineWidth=.7;
+    for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(hand.x-1.8+i*1.4,hand.y-1);ctx.lineTo(hand.x-1.2+i*1.4,hand.y+1.8);ctx.stroke()}
+  }else if(kind==='mage'){
+    // Jari terbuka untuk gaya casting, bukan tangan yang hilang.
+    ctx.beginPath();ctx.ellipse(hand.x,hand.y,3.25,3.5,-.25,0,TAU);ctx.fill();
+    ctx.strokeStyle=shade(skin,.78);ctx.lineWidth=.75;ctx.lineCap='round';
+    for(let i=0;i<3;i++){const x=hand.x-1.7+i*1.6;ctx.beginPath();ctx.moveTo(x,hand.y-1);ctx.lineTo(x+(i-1)*.9,hand.y-4.1);ctx.stroke()}
+    ctx.beginPath();ctx.moveTo(hand.x+1.5,hand.y);ctx.lineTo(hand.x+4.2,hand.y-1.8);ctx.stroke();
+  }else{
+    // Penumbuk ringkas dengan ibu jari jelas kelihatan.
+    ctx.beginPath();ctx.ellipse(hand.x,hand.y,3.6,3.35,-.2,0,TAU);ctx.fill();
+    ctx.fillStyle=shade(skin,.88);rr(ctx,hand.x-1.5,hand.y-1.2,3.6,2.1,1);ctx.fill();
+    ctx.beginPath();ctx.ellipse(hand.x+2.2,hand.y-.9,1.8,1.25,-.55,0,TAU);ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawQuiver(){
   const it=eq.shield,c=it?ARMOR_COL[it.rar]:['#a8743f','#5e3a1a'];ctx.save();ctx.translate(7,-30);ctx.rotate(.36);
   // Batang & bulu anak panah
@@ -1935,6 +1989,7 @@ function drawHero(h){
   }
 
   drawWeaponArm(h,handC);
+  drawOffArm(h,handC);
 
   if(f==='up'){if(CO.wings)drawWings(CO.wings,false,0);if(CO.tail)drawTail(false);if(capeC)drawCape(h,false,0,capeC);if(cls==='warrior')drawShield(-10,-21,1);if(cls==='archer')drawQuiver()}
 
