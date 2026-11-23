@@ -2336,12 +2336,82 @@ function drawBench(){const x=BENCH.x,y=BENCH.y;ctx.save();ctx.translate(x,y);ell
   ctx.fillStyle='#4b505a';ctx.beginPath();ctx.moveTo(-14,-24);ctx.lineTo(-10,-31);ctx.lineTo(10,-31);ctx.lineTo(16,-35);ctx.lineTo(14,-29);ctx.lineTo(8,-27);ctx.lineTo(8,-24);ctx.closePath();ctx.fill();
   ctx.fillStyle='#6b4423';ctx.save();ctx.translate(18,-27);ctx.rotate(-.6);ctx.fillRect(-1,-10,2.5,12);ctx.fillStyle='#8a8f99';ctx.fillRect(-4,-13,9,5);ctx.restore();
   ctx.restore();if(Math.hypot(hero.x-x,hero.y-y)<220)label(x,y-50,'🔨 Meja Kerja')}
-function drawCampfire(){const x=BASE.x,y=BASE.y+20;ctx.save();ctx.translate(x,y);
-  for(let k=0;k<8;k++){const a=k/8*TAU;circ(Math.cos(a)*13,Math.sin(a)*5,4,'#7d7f88')}
-  ctx.strokeStyle='#5a3a1e';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-10,2);ctx.lineTo(10,-4);ctx.moveTo(-10,-4);ctx.lineTo(10,2);ctx.stroke();
-  const f2=Math.sin(time*14)*1.5+Math.sin(time*9);const flame=(s,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(-7*s,0);ctx.quadraticCurveTo(-8*s,-12*s,f2*s,(-22-f2)*s);ctx.quadraticCurveTo(8*s,-12*s,7*s,0);ctx.closePath();ctx.fill()};
-  flame(1,'#ff6a1f');flame(.7,'#ffb21f');flame(.4,'#fff1a0');ctx.restore();
-  ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(x,y-8,0,x,y-8,70);g.addColorStop(0,'rgba(255,150,60,.28)');g.addColorStop(1,'rgba(255,150,60,0)');ctx.fillStyle=g;ctx.fillRect(x-70,y-78,140,140);ctx.restore()}
+function drawBaseCamp(){
+  const x=BASE.x,y=BASE.y+18,L=baseLv;
+  ctx.save();ctx.translate(x,y);
+  // Raised landscaped courtyard grows with every base upgrade.
+  const rx=[54,78,102,126,151][L-1],ry=[32,43,55,67,79][L-1];
+  ctx.fillStyle='rgba(0,0,0,.24)';ctx.beginPath();ctx.ellipse(0,7,rx+13,ry+9,0,0,TAU);ctx.fill();
+  const earth=ctx.createLinearGradient(0,-ry,0,ry+8);earth.addColorStop(0,'#9b7950');earth.addColorStop(.45,'#6e5739');earth.addColorStop(1,'#3e3829');
+  ctx.fillStyle=earth;ctx.beginPath();ctx.ellipse(0,0,rx+8,ry+5,0,0,TAU);ctx.fill();
+  ctx.strokeStyle='rgba(224,196,139,.45)';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,-2,rx+3,ry+2,0,0,TAU);ctx.stroke();
+  // Stone path to the entrance.
+  ctx.fillStyle='#9c8b6b';ctx.beginPath();ctx.moveTo(-13,ry+4);ctx.lineTo(-9,ry-4);ctx.lineTo(9,ry-4);ctx.lineTo(15,ry+4);ctx.closePath();ctx.fill();
+  for(let k=0;k<5;k++){ctx.fillStyle=k%2?'#b4a17c':'#81745d';rr(ctx,-9+k*3,ry-2+k*7,16,6,2);ctx.fill()}
+  // Campfire remains as a warm focal point in every stage.
+  const fx=-rx*.58,fy=ry*.38;ctx.save();ctx.translate(fx,fy);
+  for(let k=0;k<8;k++){const a=k/8*TAU;circ(Math.cos(a)*9,Math.sin(a)*3,3.2,'#777b7c')}
+  ctx.strokeStyle='#55351f';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-8,1);ctx.lineTo(8,-3);ctx.moveTo(-8,-3);ctx.lineTo(8,1);ctx.stroke();
+  const flick=Math.sin(time*13)*1.7+Math.sin(time*8);
+  const flame=(sc,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-6*sc,0);ctx.quadraticCurveTo(-8*sc,-10*sc,flick*sc,-(19+flick)*sc);ctx.quadraticCurveTo(8*sc,-10*sc,6*sc,0);ctx.closePath();ctx.fill()};
+  flame(1,'#f45b1c');flame(.68,'#ffb52e');flame(.36,'#fff0a1');ctx.restore();
+  // Building stages: shelter -> cabin -> great lodge -> fortified stone keep.
+  if(L>=2){
+    const scale=[0,.58,.78,1,1.2][L-1];ctx.save();ctx.translate(10,-ry*.12);ctx.scale(scale,scale);
+    const stone=L>=5,wide=L>=4?112:86,wallH=L>=4?66:52,roofY=-wallH-31;
+    // Foundation and side shadow.
+    ctx.fillStyle='#30291f';rr(ctx,-wide/2-8,1,wide+16,13,4);ctx.fill();
+    const wall=ctx.createLinearGradient(-wide/2,0,wide/2,0);wall.addColorStop(0,stone?'#626b73':'#583820');wall.addColorStop(.48,stone?'#aab0b6':'#a66d3e');wall.addColorStop(1,stone?'#555e68':'#54351f');
+    ctx.fillStyle=wall;rr(ctx,-wide/2,-wallH,wide,wallH+4,4);ctx.fill();
+    // Timber / masonry courses.
+    for(let k=1;k<(stone?5:6);k++){const yy=-k*wallH/(stone?5:6);ctx.strokeStyle=stone?'rgba(42,49,57,.42)':'rgba(49,27,13,.48)';ctx.lineWidth=stone?2:3;ctx.beginPath();ctx.moveTo(-wide/2+3,yy);ctx.lineTo(wide/2-3,yy);ctx.stroke();}
+    if(!stone){ctx.strokeStyle='#d1a16a';ctx.lineWidth=3;for(const xx of[-wide/2+8,wide/2-8]){ctx.beginPath();ctx.moveTo(xx,-wallH+3);ctx.lineTo(xx,0);ctx.stroke()}}
+    // Door, brass handle, windows and warm light.
+    ctx.fillStyle='#302016';rr(ctx,-13,-39,26,42,5);ctx.fill();ctx.fillStyle='#8c572f';rr(ctx,-10,-36,20,37,3);ctx.fill();
+    ctx.fillStyle='#f5c86e';circ(6,-18,2.2,'#f5c86e');
+    for(const wx of[-wide*.31,wide*.31]){ctx.fillStyle='#30251c';rr(ctx,wx-9,-wallH+15,18,21,3);ctx.fill();const wg=ctx.createLinearGradient(0,-wallH+15,0,-wallH+36);wg.addColorStop(0,'#fff2a3');wg.addColorStop(1,'#d87832');ctx.fillStyle=wg;rr(ctx,wx-6,-wallH+18,12,15,2);ctx.fill();ctx.strokeStyle=stone?'#d1b77f':'#4b2d1b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(wx,-wallH+18);ctx.lineTo(wx,-wallH+33);ctx.moveTo(wx-6,-wallH+25);ctx.lineTo(wx+6,-wallH+25);ctx.stroke()}
+    // Steep layered roof with visible tiles.
+    const roof=ctx.createLinearGradient(0,roofY,0,-wallH+5);roof.addColorStop(0,stone?'#3e4854':'#4a261d');roof.addColorStop(.55,stone?'#68717c':'#9a4930');roof.addColorStop(1,stone?'#343d49':'#572b20');
+    ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(-wide/2-17,-wallH+3);ctx.lineTo(0,roofY);ctx.lineTo(wide/2+17,-wallH+3);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=stone?'#aab3bd':'#d08a55';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-wide/2-17,-wallH+3);ctx.lineTo(0,roofY);ctx.lineTo(wide/2+17,-wallH+3);ctx.stroke();
+    for(let row=1;row<=4;row++){const t=row/5,yy=roofY+(wallH+3+roofY)*t;const half=(wide/2+17)*(1-t)+3;ctx.strokeStyle=stone?'rgba(205,214,224,.25)':'rgba(255,193,126,.32)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-half,yy);ctx.lineTo(half,yy);ctx.stroke();for(let j=-2;j<=2;j++){const xx=j*half/3;ctx.beginPath();ctx.moveTo(xx,yy-3);ctx.lineTo(xx,yy+3);ctx.stroke()}}
+    // Roof crest emblem and hanging banner.
+    ctx.fillStyle='#d6ad61';ctx.beginPath();ctx.moveTo(0,roofY-8);ctx.lineTo(7,roofY+2);ctx.lineTo(0,roofY+12);ctx.lineTo(-7,roofY+2);ctx.closePath();ctx.fill();
+    if(L>=4){ctx.fillStyle='#4d5965';ctx.fillRect(wide*.31,-wallH-58,15,38);ctx.fillStyle='#b4bdc5';ctx.fillRect(wide*.31-3,-wallH-61,21,5);}
+    if(L>=5){
+      // Corner turrets and crenellations elevate the final cabin into a compact castle.
+      ctx.fillStyle='#8f9aa5';for(const tx of[-wide/2-8,wide/2-2]){rr(ctx,tx,-wallH-13,12,23,3);ctx.fill();ctx.fillStyle='#c1c8ce';ctx.fillRect(tx-2,-wallH-17,16,5);ctx.fillStyle='#8f9aa5'}
+      const glow=ctx.createRadialGradient(0,roofY-5,1,0,roofY-5,48);glow.addColorStop(0,'rgba(90,220,255,.72)');glow.addColorStop(1,'rgba(120,190,255,0)');ctx.globalCompositeOperation='lighter';ctx.fillStyle=glow;ctx.fillRect(-50,roofY-55,100,100);ctx.globalCompositeOperation='source-over';
+      // Large faceted crystal on the keep roof.
+      const pulse=1+Math.sin(time*3.2)*.1;ctx.save();ctx.translate(0,roofY-11);ctx.scale(pulse,pulse);
+      ctx.fillStyle='#65717f';ctx.beginPath();ctx.moveTo(-15,9);ctx.lineTo(-11,1);ctx.lineTo(11,1);ctx.lineTo(15,9);ctx.closePath();ctx.fill();
+      const cg=ctx.createLinearGradient(-8,-25,9,18);cg.addColorStop(0,'#f2ffff');cg.addColorStop(.28,'#7eeeff');cg.addColorStop(.7,'#3989ee');cg.addColorStop(1,'#243d9a');ctx.fillStyle=cg;
+      ctx.beginPath();ctx.moveTo(0,-29);ctx.lineTo(12,-8);ctx.lineTo(7,15);ctx.lineTo(-7,15);ctx.lineTo(-12,-8);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(225,255,255,.85)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,-29);ctx.lineTo(0,13);ctx.moveTo(-12,-8);ctx.lineTo(7,15);ctx.stroke();ctx.restore();
+      // Two flanking watchtowers with animated royal banners.
+      for(const tx of[-79,79]){ctx.save();ctx.translate(tx,-31);ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(0,4,20,7,0,0,TAU);ctx.fill();
+        const tg=ctx.createLinearGradient(-15,0,15,0);tg.addColorStop(0,'#626d7a');tg.addColorStop(.5,'#c0c8d1');tg.addColorStop(1,'#58616d');ctx.fillStyle=tg;rr(ctx,-14,-59,28,63,3);ctx.fill();
+        ctx.strokeStyle='rgba(40,48,58,.55)';ctx.lineWidth=1.5;for(let by=-48;by<0;by+=12){ctx.beginPath();ctx.moveTo(-13,by);ctx.lineTo(13,by);ctx.stroke()}
+        ctx.fillStyle='#aeb8c4';for(let bx=-16;bx<=8;bx+=12)ctx.fillRect(bx,-68,8,13);
+        ctx.fillStyle='#394654';ctx.beginPath();ctx.moveTo(-19,-67);ctx.lineTo(0,-85);ctx.lineTo(19,-67);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='#d9e1e8';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-85);ctx.lineTo(0,-103);ctx.stroke();
+        const fw=Math.sin(time*3+tx)*2;ctx.fillStyle='#b72e3d';ctx.beginPath();ctx.moveTo(0,-102);ctx.lineTo(22,-98+fw);ctx.lineTo(0,-87);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#ffd778';circ(0,-31,4,'#ffd778');ctx.restore();}
+      // Grand front gate, stone steps and magical courtyard runes.
+      ctx.fillStyle='#7e8996';rr(ctx,-28,ry*.53,56,15,3);ctx.fill();ctx.fillStyle='#303b49';rr(ctx,-16,ry*.31,32,30,8);ctx.fill();
+      ctx.strokeStyle='#c5a66c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-16,ry*.31);ctx.lineTo(-16,ry*.31+30);ctx.moveTo(16,ry*.31);ctx.lineTo(16,ry*.31+30);ctx.stroke();ctx.fillStyle='#e7c77e';circ(0,ry*.31+14,3,'#e7c77e');
+      for(const [rx0,ry0] of[[-54,28],[54,28],[-54,-28],[54,-28]]){const a=.45+Math.sin(time*3+rx0)*.2;ctx.globalCompositeOperation='lighter';ctx.fillStyle=`rgba(90,210,255,${a})`;ctx.beginPath();ctx.arc(rx0,ry0,3+Math.sin(time*4+ry0),0,TAU);ctx.fill();ctx.globalCompositeOperation='source-over'}
+    }
+    ctx.restore();
+  }else{
+    // Starter camp at level 1: bedroll and a small supply chest.
+    ctx.fillStyle='#9a6b42';rr(ctx,12,-10,31,13,3);ctx.fill();ctx.fillStyle='#d9c18e';rr(ctx,15,-13,25,7,3);ctx.fill();
+    ctx.fillStyle='#6a4829';rr(ctx,rx*.28,-ry*.25,20,16,3);ctx.fill();ctx.strokeStyle='#c39550';ctx.lineWidth=2;ctx.strokeRect(rx*.28,-ry*.25,20,16);
+  }
+  // Small decorative lanterns scale with the camp.
+  for(const lx of[-rx*.72,rx*.72]){ctx.strokeStyle='#50331e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,-4);ctx.lineTo(lx,-24);ctx.stroke();ctx.fillStyle='#8c633b';rr(ctx,lx-5,-29,10,10,2);ctx.fill();const lg=ctx.createRadialGradient(lx,-24,1,lx,-24,17);lg.addColorStop(0,'rgba(255,207,103,.55)');lg.addColorStop(1,'rgba(255,190,80,0)');ctx.fillStyle=lg;ctx.fillRect(lx-17,-41,34,34);circ(lx,-24,3,'#ffd477')}
+  ctx.restore();
+}
 function drawTent(){const x=BASE.x-58,y=BASE.y-30;ctx.save();ctx.translate(x,y);ell(0,2,40,9,'rgba(0,0,0,.25)');
   const g=ctx.createLinearGradient(-36,0,36,0);g.addColorStop(0,'#e9d8b0');g.addColorStop(1,'#b59a6a');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-38,0);ctx.lineTo(0,-46);ctx.lineTo(38,0);ctx.closePath();ctx.fill();
   ctx.fillStyle='#4a3020';ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(0,-30);ctx.lineTo(10,0);ctx.closePath();ctx.fill();ctx.restore()}
@@ -2363,9 +2433,13 @@ function drawMonument(){const x=BASE.x+4,y=BASE.y-80;ctx.save();ctx.translate(x,
   const fy=-38+Math.sin(time*2)*4;ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(0,fy,0,0,fy,40);g.addColorStop(0,'rgba(255,90,150,.55)');g.addColorStop(1,'rgba(120,200,255,0)');ctx.fillStyle=g;ctx.fillRect(-40,fy-40,80,80);ctx.globalCompositeOperation='source-over';
   const cg=ctx.createLinearGradient(-9,fy-18,9,fy+18);cg.addColorStop(0,'#ffe1ec');cg.addColorStop(.5,'#ff5d8f');cg.addColorStop(1,'#7a3cff');ctx.fillStyle=cg;
   ctx.beginPath();ctx.moveTo(0,fy-20);ctx.lineTo(9,fy-4);ctx.lineTo(0,fy+18);ctx.lineTo(-9,fy-4);ctx.closePath();ctx.fill();ctx.restore()}
-const FENCE=[];{const N=26;for(let k=0;k<N;k++){const a=k/N*TAU;if(a>4.9&&a<5.9)continue;FENCE.push({x:BASE.x+Math.cos(a)*135,y:BASE.y+Math.sin(a)*92})}}
+const FENCE=[];{const N=26;for(let k=0;k<N;k++){const a=k/N*TAU;if(a>4.9&&a<5.9)continue;FENCE.push({x:BASE.x+Math.cos(a)*165,y:BASE.y+Math.sin(a)*112})}}
 function drawFencePost(k){const p=FENCE[k],nx=FENCE[(k+1)%FENCE.length],stone=baseLv>=5,gap=Math.hypot(nx.x-p.x,nx.y-p.y)>60;
-  if(!gap){ctx.strokeStyle=stone?'#8d93a0':'#8a5a30';ctx.lineWidth=stone?9:3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p.x,p.y-(stone?8:10));ctx.lineTo(nx.x,nx.y-(stone?8:10));ctx.stroke();if(!stone){ctx.beginPath();ctx.moveTo(p.x,p.y-4);ctx.lineTo(nx.x,nx.y-4);ctx.stroke()}}
+  if(!gap){ctx.strokeStyle=stone?'#8d93a0':'#8a5a30';ctx.lineWidth=stone?10:3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p.x,p.y-(stone?8:10));ctx.lineTo(nx.x,nx.y-(stone?8:10));ctx.stroke();if(!stone){ctx.beginPath();ctx.moveTo(p.x,p.y-4);ctx.lineTo(nx.x,nx.y-4);ctx.stroke()}else{
+    // Battlement blocks along the stone perimeter.
+    const dx=nx.x-p.x,dy=nx.y-p.y,len=Math.hypot(dx,dy),steps=Math.max(1,Math.floor(len/13));
+    for(let j=0;j<=steps;j++){const t=j/steps,bx=p.x+dx*t,by=p.y+dy*t-15;ctx.save();ctx.translate(bx,by);ctx.rotate(Math.atan2(dy,dx));ctx.fillStyle=j%2?'#77818e':'#b5bdc7';rr(ctx,-3,-5,7,11,1.5);ctx.fill();ctx.restore()}
+  }}
   if(stone){ctx.fillStyle='#a3a9b5';rr(ctx,p.x-7,p.y-22,14,22,3);ctx.fill();ctx.fillStyle='#7d838f';ctx.fillRect(p.x-7,p.y-24,14,4)}
   else{ctx.fillStyle='#7a4e2a';rr(ctx,p.x-3,p.y-17,6,17,2);ctx.fill()}}
 function drawPortal(p){const ok=canEnter(p.to),n=MAPS[p.to],c=ok?(p.to>mapIdx?'120,230,255':'255,210,120'):'150,150,160';
@@ -2437,12 +2511,11 @@ function draw(){
   for(const p of portals)if(inV(p.x,p.y,120))L.push({y:p.y,f:()=>drawPortal(p)});
   if(mapIdx===0){
     if(inV(HOUSE.x,HOUSE.y,160))L.push({y:HOUSE.y,f:drawHouse});
-    L.push({y:960,f:()=>drawSign(760,960,'HUTAN ➜')},{y:ELDER.y,f:drawElder},{y:BENCH.y,f:drawBench},{y:BASE.y+20,f:drawCampfire});
+    L.push({y:960,f:()=>drawSign(760,960,'HUTAN ➜')},{y:ELDER.y,f:drawElder},{y:BENCH.y,f:drawBench});
     homeDrawables(L,inV);
-    if(inV(BASE.x,BASE.y,260)){
+    if(inV(BASE.x,BASE.y,300)){
       if(baseLv>=2)for(let k=0;k<FENCE.length;k++)L.push({y:FENCE[k].y,f:()=>drawFencePost(k)});
-      if(baseLv===2)L.push({y:BASE.y-30,f:drawTent});if(baseLv>=3)L.push({y:BASE.y-28,f:drawCabin},{y:BASE.y+42,f:drawCrates});
-      if(baseLv>=4)L.push({y:BASE.y-58,f:drawTower});if(baseLv>=5)L.push({y:BASE.y-80,f:drawMonument});
+      L.push({y:BASE.y+35,f:drawBaseCamp});
       L.push({y:BASE.y+120,f:()=>{if(Math.hypot(hero.x-BASE.x,hero.y-BASE.y)<260)label(BASE.x,BASE.y+108,`🏕️ Pangkalan Tahap ${baseLv}`)}});
     }
   }
