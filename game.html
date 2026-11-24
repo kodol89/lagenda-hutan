@@ -107,7 +107,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 <div id="hurt"></div><div id="thunderFx"></div>
 <div id="top">
  <div class="col">
-  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.4</div></div>
+  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.5</div></div>
   <a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="musB" class="musB">🔊 MUZIK</a><a id="sfxB">🔔 BUNYI</a><a id="fsB">⛶ SKRIN PENUH</a><a id="invB">🎒 BEG [I]</a>
  </div>
  <div class="col r">
@@ -241,7 +241,7 @@ async function runPick(start){
  const ptsP=new THREE.Points(pg,pmat);ptsP.frustumCulled=false;S.add(ptsP);
  // muat model
  await Promise.all(K.map(k=>window.LHB_MODELS&&window.LHB_MODELS[k]?true:ldS('models/'+k+'.js')));const L=new GLTFLoader();
- for(const h of H){const b=window.LHB_MODELS&&window.LHB_MODELS[h.k];if(!b)continue;try{const g=await new Promise((r,j)=>L.parse(b2b(b),'',r,j));const m=g.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);const sc=2.3/((box.max.y-box.min.y)||1);m.scale.setScalar(sc);m.position.y=.55-box.min.y*sc;h.grp.add(m);h.model=m;
+ for(const h of H){const b=window.LHB_MODELS&&window.LHB_MODELS[h.k];if(!b)continue;try{const g=await new Promise((r,j)=>L.parse(b2b(b),'',r,j));const m=g.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});const bx=mBox(g,m);const sc=2.3/((bx.hi-bx.lo)||1);m.scale.setScalar(sc);m.position.y=.55-bx.lo*sc;h.grp.add(m);h.model=m;
   h.mixer=new THREE.AnimationMixer(m);for(const c of g.animations)h.acts[c.name]=h.mixer.clipAction(c);h.mixer.addEventListener('finished',()=>{if(H[sel]===h)hp(h,COMBAT[H.indexOf(h)])})}catch(e){console.warn('Ralat model pilih',h.k,e)}}
  function hp(h,n,once=false,ts=1){const a=h.acts[n]||h.acts.Idle;if(!a)return;if(h.cur===a&&!once)return;a.reset();a.setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,Infinity);a.clampWhenFinished=once;a.timeScale=ts;a.play();if(h.cur&&h.cur!==a)a.crossFadeFrom(h.cur,.25,false);h.cur=a}
  H.forEach(h=>{hp(h,'Idle');if(h.cur)h.cur.time=Math.random()*2});
@@ -274,6 +274,7 @@ async function runPick(start){
 const C=CLASSES[CLS];
 // model dimuat melalui <script> (berfungsi juga bila fail dibuka terus tanpa server)
 const modelP=new Promise(res=>{const get=()=>window.LHB_MODELS&&window.LHB_MODELS[CLS]||null;if(get())return res(get());const sc=document.createElement('script');sc.src='models/'+CLS+'.js';sc.onload=()=>res(get());sc.onerror=()=>res(null);document.head.appendChild(sc);setTimeout(()=>res(null),30000)});
+function mBox(g,m){const e=g&&g.asset&&g.asset.extras;if(e&&e.hi!=null)return{lo:e.lo,hi:e.hi};m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);return{lo:box.min.y,hi:box.max.y}}
 const loadJS=src=>new Promise(res=>{const sc=document.createElement('script');sc.src=src;sc.onload=()=>res(true);sc.onerror=()=>res(false);document.head.appendChild(sc);setTimeout(()=>res(false),45000)});
 const skyP=loadJS('models/Sky.js'),natP=loadJS('models/Nature.js'),propP=loadJS('models/Props.js');
 const monP=Promise.all([loadJS('models/Monsters.js'),loadJS('models/Animals.js')]).then(r=>r.some(Boolean));
@@ -540,7 +541,7 @@ function b64ToBuf(b){const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.
 function play(name,once=false,ts=1,fade=.18){const a=A.actions[name];if(!a)return null;if(A.cur===a&&!once){a.timeScale=ts;return a}a.reset();a.setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,Infinity);a.clampWhenFinished=once;a.timeScale=ts;a.setEffectiveWeight(1);a.play();if(A.cur&&A.cur!==a)a.crossFadeFrom(A.cur,fade,false);A.cur=a;return a}
 async function setupModel(){const b64=await modelP;if(!b64){console.warn('Model tidak dimuat — guna model asas');return}
  try{const gltf=await new Promise((res,rej)=>new GLTFLoader().parse(b64ToBuf(b64),'',res,rej));const m=gltf.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false}});
-  m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);const h=(box.max.y-box.min.y)||1,sc=3.0/h;m.scale.setScalar(sc);m.position.y=-box.min.y*sc;
+  const bx=mBox(gltf,m);const h=(bx.hi-bx.lo)||1,sc=3.0/h;m.scale.setScalar(sc);m.position.y=-bx.lo*sc;
   hero.remove(heroRig);hero.add(m);A.mixer=new THREE.AnimationMixer(m);for(const clip of gltf.animations)A.actions[clip.name]=A.mixer.clipAction(clip);play(C.idle)}catch(e){console.warn('Ralat model',e)}}
 // ---- templat monster (Quaternius Ultimate Monsters) ----
 const MONT={};
@@ -676,7 +677,7 @@ function spawnMob(near){for(let t=0;t<10;t++){const a=Math.random()*Math.PI*2,d=
 // ================= RPG: NPC, QUEST, NAIK TARAF, KEDAI, INVENTORI =================
 let PAUSED=false,nearNPC=null;const dlgEl=$('#dlg'),invEl=$('#inv');
 const F0=FIRES[0],A0=hash(0,3)*6.28,campPt=(r,a)=>[F0.x+Math.cos(A0+a)*r,F0.z+Math.sin(A0+a)*r];
-const NPCS=[{id:'batin',name:'Tok Batin',role:'KETUA KEM • QUEST',ic:'📜',model:'Ranger',pos:campPt(6.2,1.75)},{id:'besi',name:'Pak Daud',role:'TUKANG BESI • NAIK TARAF',ic:'⚒️',model:'Warrior',pos:campPt(7,5.95)},{id:'niaga',name:'Mak Som',role:'PENIAGA • RAMUAN & BAHAN',ic:'🧪',model:'Wizard',pos:campPt(6.6,4.75)}];
+const NPCS=[{id:'batin',name:'Tok Batin',role:'KETUA KEM • QUEST',ic:'📜',model:'NPC_M',tint:0x8fb0ff,anim:'Idle_Weapon',pos:campPt(6.2,1.75)},{id:'besi',name:'Pak Daud',role:'TUKANG BESI • NAIK TARAF',ic:'⚒️',model:'NPC_M',anim:'Idle',pos:campPt(7,5.95)},{id:'niaga',name:'Mak Som',role:'PENIAGA • RAMUAN & BAHAN',ic:'🧪',model:'NPC_F',anim:'Talk',pos:campPt(6.6,4.75)}];
 NPCS.forEach(n=>{n.x=n.pos[0];n.z=n.pos[1];n.y=heightAt(n.x,n.z);n.rot=Math.atan2(F0.x-n.x,F0.z-n.z);addRock(n.x,n.z,.8,n.y,n.y+3)});
 deco('Anvil',...campPt(8.4,6.25),0,1);
 const QUESTS=[
@@ -749,11 +750,11 @@ function renderInv(){$('#invSub').textContent=`${CLASSES[CLS].name.toUpperCase()
   h+=`<div class="sec">KEMAJUAN CERITA</div>${QUESTS.map((x,i)=>`<div class="row2" style="opacity:${i<q.i?.55:i===q.i?1:.35}"><div class="ri">${i<q.i?'✅':i===q.i?'▶':'🔒'}</div><div><b>${i<=q.i?x.n:'???'}</b><span>${i<q.i?'Selesai':i===q.i?x.d:'Belum dibuka'}</span></div></div>`).join('')}`}
  $('#invBody').innerHTML=h;const pb=$('#invPot');if(pb)pb.addEventListener('click',()=>{drinkPotion();renderInv()})}
 // --- model NPC ---
-async function setupNPCs(){const L=new GLTFLoader();for(const n of NPCS){try{if(!(window.LHB_MODELS&&window.LHB_MODELS[n.model]))await loadJS('models/'+n.model+'.js');const b=window.LHB_MODELS&&window.LHB_MODELS[n.model];if(!b)throw Error('tiada model');
-  const g=await new Promise((r,j)=>L.parse(b64ToBuf(b),'',r,j));const m=g.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);const sc=3.1/((box.max.y-box.min.y)||1);m.scale.setScalar(sc);m.position.set(n.x,n.y-box.min.y*sc,n.z);m.rotation.y=n.rot;scene.add(m);n.obj=m;
-  n.mixer=new THREE.AnimationMixer(m);const clip=g.animations.find(c=>c.name===(n.id==='besi'?'Idle_Weapon':'Idle'))||g.animations[0];if(clip){const a=n.mixer.clipAction(clip);a.play();a.time=Math.random()*2}}catch(e){console.warn('NPC',n.name,e);const grp=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.5,.6,2.2,10),new THREE.MeshStandardMaterial({color:n.id==='besi'?0x6a4a2a:n.id==='niaga'?0x7a3a8a:0x3a6a4a}));body.position.y=1.1;const head=new THREE.Mesh(new THREE.SphereGeometry(.42,12,10),new THREE.MeshStandardMaterial({color:0xd5a276}));head.position.y=2.55;grp.add(body,head);grp.position.set(n.x,n.y,n.z);scene.add(grp);n.obj=grp}
+async function setupNPCs(){const L=new GLTFLoader();for(const n of NPCS){try{if(!(window.LHB_MODELS&&window.LHB_MODELS[n.model]))await loadJS('models/NPC.js');const b=window.LHB_MODELS&&window.LHB_MODELS[n.model];if(!b)throw Error('tiada model');
+  const g=await new Promise((r,j)=>L.parse(b64ToBuf(b),'',r,j));const m=g.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false;if(n.tint&&o.material&&/Peasant/.test(o.material.name)){o.material=o.material.clone();o.material.color.setHex(n.tint)}}});const bx=mBox(g,m);const sc=3.0/((bx.hi-bx.lo)||1);m.scale.setScalar(sc);m.position.set(n.x,n.y-bx.lo*sc,n.z);m.rotation.y=n.rot;scene.add(m);n.obj=m;
+  n.mixer=new THREE.AnimationMixer(m);const clip=g.animations.find(c=>c.name===n.anim)||g.animations.find(c=>c.name==='Idle')||g.animations[0];if(clip){const a=n.mixer.clipAction(clip);a.play();a.time=Math.random()*2}}catch(e){console.warn('NPC',n.name,e);const grp=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.5,.6,2.2,10),new THREE.MeshStandardMaterial({color:n.id==='besi'?0x6a4a2a:n.id==='niaga'?0x7a3a8a:0x3a6a4a}));body.position.y=1.1;const head=new THREE.Mesh(new THREE.SphereGeometry(.42,12,10),new THREE.MeshStandardMaterial({color:0xd5a276}));head.position.y=2.55;grp.add(body,head);grp.position.set(n.x,n.y,n.z);scene.add(grp);n.obj=grp}
   const el=document.createElement('div');el.className='npcL';labels.appendChild(el);n.el=el}
- for(const k of['Warrior','Ranger','Wizard'])if(k!==CLS&&window.LHB_MODELS)delete window.LHB_MODELS[k];qTrack()}
+ if(window.LHB_MODELS){delete window.LHB_MODELS.NPC_M;delete window.LHB_MODELS.NPC_F}qTrack()}
 function updateNPCs(dt){const q=P.q;for(const n of NPCS){const d=Math.hypot(n.x-hero.position.x,n.z-hero.position.z);if(n.mixer&&d<90)n.mixer.update(dt);if(!n.el)continue;
   if(d<45){const s=toScreen(n.x,n.y+3.9,n.z);if(s){let mk='';if(n.id==='batin')mk=q.state==='done'?'✔':q.state==='none'?'!':'';else if(n.id==='besi'&&((P.wlv<10&&canPay(wCost(P.wlv+1)))||(P.alv<10&&canPay(aCost(P.alv+1)))))mk='⚒';n.el.innerHTML=(mk?`<em>${mk}</em>`:'')+n.name;n.el.style.display='';n.el.style.transform=`translate(${s[0]}px,${s[1]}px) translate(-50%,-100%)`;continue}}n.el.style.display='none'}}
 // ================= PERTARUNGAN BOS: RAJA IBLIS =================
@@ -862,7 +863,7 @@ function updateProjs(dt){for(let i=projs.length-1;i>=0;i--){const p=projs[i],o=p
  const ground=o.position.y<heightAt(o.position.x,o.position.z)+.1;
  if(bk&&!hit){if(p.kind!=='orb')breakIt(bk);hit=null}if(hit||bk||ground||p.life<=0){if(p.kind==='orb'&&(hit||bk||ground)){breakNear(o.position.x,o.position.z,p.aoe).forEach(breakIt);boom(o.position,p.aoe,p.fire?0xff8a30:0xa880ff);for(const m of [...mobs])if(!m.dead&&Math.hypot(m.x-o.position.x,m.z-o.position.z)<p.aoe+m.def.scale*.5)dealHit(m,p.mult)}else if(hit)dealHit(hit,p.mult);scene.remove(o);projs.splice(i,1)}}
  for(let i=booms.length-1;i>=0;i--){const b=booms[i];b.t+=dt;const k=b.t/.35;b.m.scale.setScalar(.3+k*b.r*.8);b.m.material.opacity=.55*(1-k);if(k>=1){scene.remove(b.m);b.m.material.dispose();booms.splice(i,1)}}}
-const FIN_ANIM={Warrior:'Sword_Attack',Ranger:'Bow_Shoot',Wizard:'Spell2'};
+const FIN_ANIM={Warrior:'Sword_Finisher',Ranger:'Bow_Shoot',Wizard:'Spell2'};
 function attack(){if(P.dead||P.atkCd>0)return;const step=P.chainT>0?(P.chain+1)%3:0,fin=step===2;P.chain=step;P.chainT=C.cd*1.15+.7;P.atkCd=fin?C.cd*1.3:C.cd*.9;P.atkT=.3;const aim=(mouseAtk||attackHeld)?getAim():null;aimLock=!!aim;
  if(A.mixer){const an=fin?FIN_ANIM[CLS]:C.atkAnims[step%C.atkAnims.length],ts=fin?C.atkTs*.95:C.atkTs*1.1;P.combo=step;const a=play(an,true,ts,.08);if(a)A.lock=Math.min(a.getClip().duration/ts*.92,P.atkCd+.25)}
  if(fin){flash(hero.position.x,hero.position.y+2,hero.position.z,CLS==='Warrior'?0xffc060:CLS==='Ranger'?0x9effa0:0xc8a0ff,3);emit(hero.position.x,hero.position.y+1.2,hero.position.z,{n:12,col:0xffffff,col2:CLS==='Warrior'?0xffb040:CLS==='Ranger'?0x40e070:0x9a6aff,spd:3,life:.4,size:.5,spread:.6})}
