@@ -23,7 +23,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 .hp i{background:linear-gradient(90deg,#e34c45,#f6a05b)}.xp{background:#18263a}.xp i{background:linear-gradient(90deg,#4aa8ff,#9ef08f)}
 #area{margin-top:4px;color:#e9f3dc}#bag{font-size:10px;color:#bfd0b9}
 #mini{width:112px;height:112px;border-radius:50%;pointer-events:auto;cursor:pointer;box-shadow:0 4px 18px #0007}
-#back,#swap{pointer-events:auto;align-self:flex-start;color:#f9dfa0;text-decoration:none;font-size:10px;background:#07150fbb;padding:6px 10px;border:1px solid #d9b56855;border-radius:20px}
+#back,#swap,#musB{pointer-events:auto;cursor:pointer;align-self:flex-start;color:#f9dfa0;text-decoration:none;font-size:10px;background:#07150fbb;padding:6px 10px;border:1px solid #d9b56855;border-radius:20px}
 #hint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);font-size:11px;color:#f7edcf;background:#07150fc9;padding:7px 13px;border:1px solid #d9b56855;border-radius:30px;max-width:min(560px,70vw);text-align:center;pointer-events:none;transition:opacity .4s}
 #help{position:fixed;left:14px;bottom:14px;font-size:10px;line-height:1.6;color:#d4dfca;background:#07150fc9;padding:8px 11px;border-radius:10px;border:1px solid #ffffff22;pointer-events:none}
 #stick{position:fixed;left:22px;bottom:26px;width:120px;height:120px;border-radius:50%;background:#d9e8d322;border:1px solid #ffffff55;touch-action:none;box-shadow:inset 0 0 24px #0005}
@@ -63,6 +63,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 .pk-go{display:block;width:100%;margin-top:14px;padding:14px;border-radius:14px;border:1px solid #ffe1a0;cursor:pointer;font:900 16px Cinzel,Georgia,serif;letter-spacing:2px;color:#2a1704;background:linear-gradient(180deg,#ffe8a8,#ffb34a 55%,#d4801f);box-shadow:0 8px 26px -6px #ffaa33aa;animation:goPulse 2.2s ease-in-out infinite}
 .pk-go:hover{filter:brightness(1.1)}@keyframes goPulse{0%,100%{box-shadow:0 8px 26px -6px #ffaa33aa}50%{box-shadow:0 8px 36px -2px #ffcc55dd}}
 .pk-arrow{position:absolute;top:34%;z-index:3;width:44px;height:44px;border-radius:50%;border:1px solid #ffffff44;background:#07130fb0;color:#fff;font-size:20px;cursor:pointer;display:none}
+.pk-mus{position:absolute;top:14px;right:14px;z-index:5;padding:7px 12px;border-radius:20px;border:1px solid #ffffff44;background:#07130fb0;color:#f9dfa0;font-size:11px;font-weight:800;cursor:pointer}
 .pk-load{position:absolute;inset:0;display:grid;place-items:center;z-index:4;font:900 16px Cinzel,Georgia,serif;letter-spacing:3px;color:#ffda8a;background:#030907;transition:opacity .4s}
 @media (max-width:820px),(orientation:portrait){.pk-top{top:10px}.pk-top p{display:none}
  .pk-panel{left:10px;right:10px;bottom:10px;top:auto;transform:none;width:auto;max-height:44vh;padding:14px}
@@ -89,8 +90,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 <div id="hurt"></div>
 <div id="top">
  <div class="col">
-  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.0</div></div>
-  <a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a>
+  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.1.1</div></div>
+  <a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="musB" class="musB">🔊 MUZIK</a>
  </div>
  <div class="col r">
   <div class="panel stats">
@@ -104,7 +105,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
  </div>
 </div>
 <div id="hint">Terokai hutan — ikut denai ke cahaya unggun api di hadapan</div>
-<div id="help" class="desktop-only"><b>KAWALAN</b><br>WASD / Anak panah: bergerak • Shift: berlari<br>Klik kiri: serang ke arah kursor • 1 2 3: skill<br>Space: lompat (naik batu) • Q: elak<br>E: buka peti • R: minum ramuan<br>Klik kanan + seret: kamera • Roda: zum • M: peta</div>
+<div id="help" class="desktop-only"><b>KAWALAN</b><br>WASD / Anak panah: bergerak • Shift: berlari<br>Klik kiri: serang ke arah kursor • 1 2 3: skill<br>Space: lompat (naik batu) • Q: elak<br>E: buka peti • R: minum ramuan<br>Klik kanan + seret: kamera • Roda: zum • M: peta • N: muzik</div>
 <div id="stick" class="mobile-only"><div id="knob"></div></div>
 <button id="useB" hidden>🗝 BUKA PETI</button>
 <div id="actions" class="mobile-only"><button class="act" id="potB">🧪<small id="potN">0</small></button><button class="act" id="attack">SERANG<br>⚔</button><button class="act" id="jumpB">LOMPAT<br>⤒</button><button class="act" id="dodgeB">ELAK<br>↻</button><button class="act sk" id="sk0"></button><button class="act sk" id="sk1"></button><button class="act sk" id="sk2"></button></div>
@@ -116,7 +117,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 <div class="pk-tabs"><button class="pk-tab" data-i="0" style="--tc:#ffb347"><span class="ic">⚔️</span><b>Pahlawan</b><i>Jarak dekat</i></button><button class="pk-tab" data-i="1" style="--tc:#6dff9a"><span class="ic">🏹</span><b>Pemanah</b><i>Jarak jauh</i></button><button class="pk-tab" data-i="2" style="--tc:#b38cff"><span class="ic">🔮</span><b>Ahli Sihir</b><i>Sihir kawasan</i></button></div>
 <button class="pk-arrow l" aria-label="Sebelum">‹</button><button class="pk-arrow r" aria-label="Seterusnya">›</button>
 <div class="pk-panel"><span class="pk-role" id="pkRole"></span><div class="pk-name" id="pkName"></div><p class="pk-lore" id="pkLore"></p><div id="pkStats"></div><div class="pk-diff">Kesukaran: <b id="pkDiff"></b></div><div class="pk-h">SKILL KHAS</div><div id="pkSkills"></div><button class="pk-go" id="pkGo">⚔ MULA PENGEMBARAAN</button></div>
-<div class="pk-load" id="pkLoad">MEMANGGIL PARA WIRA…</div></div>
+<button class="pk-mus musB" id="pkMus">🔊 MUZIK</button><div class="pk-load" id="pkLoad">MEMANGGIL PARA WIRA…</div></div>
 <div id="loading">MENJANA DUNIA BELANTARA…<small>Sila tunggu sebentar</small></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
@@ -127,6 +128,23 @@ import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 const $=s=>document.querySelector(s);
 const isTouch=matchMedia('(hover:none),(pointer:coarse)').matches;
 
+// ================= MUZIK (Abstraction — Music Loop Bundle, CC0) =================
+const MUS={pilih:14.2222,hutan:12.8,kem:12.8,batu:30,savana:65.4878,paya:36.8523,rimba:33.4237,bos:28.2};
+const MZ={ctx:null,gain:null,buf:{},loading:{},cur:null,curName:null,want:null,on:true,fb:null,cand:null,candN:0};
+try{MZ.on=localStorage.getItem('lhb_music')!=='0'}catch(e){}
+function musInit(){if(!MZ.on)return;try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}if(!MZ.ctx){try{MZ.ctx=new(window.AudioContext||window.webkitAudioContext)();MZ.gain=MZ.ctx.createGain();MZ.gain.gain.value=.5;MZ.gain.connect(MZ.ctx.destination)}catch(e){MZ.ctx=null;return}}if(MZ.ctx.state==='suspended')MZ.ctx.resume();if(MZ.want&&!MZ.cur&&!MZ.fb)musPlay(MZ.want,true)}
+for(const ev of['pointerdown','pointerup','touchend','click','keydown'])addEventListener(ev,musInit,{capture:true});
+document.addEventListener('visibilitychange',()=>{if(!MZ.ctx)return;if(document.hidden)MZ.ctx.suspend();else if(MZ.on)MZ.ctx.resume();if(MZ.fb){document.hidden?MZ.fb.pause():MZ.on&&MZ.fb.play().catch(()=>{})}});
+function musLoad(n){if(MZ.buf[n])return Promise.resolve(MZ.buf[n]);if(location.protocol==='file:')return Promise.resolve(null);
+ return MZ.loading[n]||(MZ.loading[n]=fetch('music/'+n+'.m4a').then(r=>{if(!r.ok)throw Error(r.status);return r.arrayBuffer()}).then(ab=>new Promise((ok,no)=>MZ.ctx.decodeAudioData(ab,ok,no))).then(b=>(MZ.buf[n]=b)).catch(e=>{console.warn('Muzik gagal',n,e);return null}))}
+async function musPlay(n,force){MZ.want=n;if(!MZ.on||!MZ.ctx)return;if(MZ.curName===n&&!force)return;MZ.curName=n;const b=await musLoad(n);if(MZ.want!==n||!MZ.on)return;
+ if(!b){musFallback(n);return}const t=MZ.ctx.currentTime,src=MZ.ctx.createBufferSource(),g=MZ.ctx.createGain();src.buffer=b;src.loop=true;src.loopStart=0;src.loopEnd=Math.min(MUS[n]||b.duration,b.duration);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+2.5);src.connect(g);g.connect(MZ.gain);src.start();
+ if(MZ.cur){const o=MZ.cur;o.g.gain.cancelScheduledValues(t);o.g.gain.setValueAtTime(o.g.gain.value,t);o.g.gain.linearRampToValueAtTime(0,t+2.5);setTimeout(()=>{try{o.src.stop()}catch(e){}},2800)}MZ.cur={src,g}}
+function musFallback(n){if(MZ.fb)MZ.fb.pause();const a=new Audio('music/'+n+'.m4a');a.loop=true;a.volume=.5;a.play().catch(()=>{});MZ.fb=a}
+function musWant(n){if(n===MZ.cand)MZ.candN++;else{MZ.cand=n;MZ.candN=1}if(MZ.candN>=3||!MZ.curName)musPlay(n)}
+function musToggle(){MZ.on=!MZ.on;try{localStorage.setItem('lhb_music',MZ.on?'1':'0')}catch(e){}if(!MZ.on){if(MZ.cur){try{MZ.cur.src.stop()}catch(e){}MZ.cur=null}if(MZ.fb){MZ.fb.pause();MZ.fb=null}MZ.curName=null}else{if(MZ.ctx&&MZ.want){if(MZ.ctx.state==='suspended')MZ.ctx.resume();musPlay(MZ.want,true)}else musInit()}musBtns()}
+function musBtns(){document.querySelectorAll('.musB').forEach(b=>b.textContent=MZ.on?'🔊 MUZIK':'🔇 MUZIK')}
+document.querySelectorAll('.musB').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();musToggle()}));musBtns();
 // ================= KELAS WIRA =================
 const CLASSES={
  Warrior:{name:'Pahlawan',hp:1.25,atk:1.0,cd:.55,kind:'melee',idle:'Idle_Weapon',run:'Run_Weapon',walk:'Walk',atkAnims:['Sword_Attack','Sword_Attack2'],atkTs:1.5,hitDelay:.2},
@@ -148,7 +166,7 @@ async function runPick(start){
    st:[['Nyawa',68],['Serangan',95],['Kelajuan',60],['Jarak',78],['Kawalan',90]],
    sk:[['🔥','Bola Api','Bola api gergasi yang meletup','5s'],['🛡️','Perisai Sihir','Perisai serap 40% nyawa','20s'],['⚡','Ribut Petir','Kilat menyambar hingga 8 musuh','26s']]}];
  const ATK=['Sword_Attack','Bow_Shoot','Spell1'],COMBAT=['Idle_Attacking','Idle_Attacking','Idle_Attacking'];
- const pk=$('#pick');pk.hidden=false;let sel=Math.max(0,K.indexOf(start));
+ const pk=$('#pick');pk.hidden=false;let sel=Math.max(0,K.indexOf(start));musPlay('pilih');
  const ldS=src=>new Promise(r=>{const sc=document.createElement('script');sc.src=src;sc.onload=()=>r(true);sc.onerror=()=>r(false);document.head.appendChild(sc)});
  const b2b=b=>{const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer};
  // panel UI
@@ -670,7 +688,7 @@ function die(src){P.dead=true;P.hp=0;hpHud();const lost=Math.floor(P.gold*.1);P.
 
 // ================= INPUT =================
 let moveX=0,moveZ=0,sprinting=false,attackHeld=false,walk=0;const keys={};
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();if(k==='j'||k==='k')attackHeld=true;if(k===' '&&!e.repeat)jump();if(k==='q'&&!e.repeat)dodge();if(['1','2','3'].includes(k)&&!e.repeat)useSkill(+k-1);if(k==='m')toggleMap();if(k==='e'&&!e.repeat)openNearChest();if(k==='r'&&!e.repeat)drinkPotion()});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();if(k==='j'||k==='k')attackHeld=true;if(k===' '&&!e.repeat)jump();if(k==='q'&&!e.repeat)dodge();if(['1','2','3'].includes(k)&&!e.repeat)useSkill(+k-1);if(k==='m')toggleMap();if(k==='n'&&!e.repeat)musToggle();if(k==='e'&&!e.repeat)openNearChest();if(k==='r'&&!e.repeat)drinkPotion()});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys[k]=false;if(k==='j'||k==='k')attackHeld=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;attackHeld=false;sprinting=false});
 const stick=$('#stick'),knob=$('#knob');let stickId=null;function stickMove(e){const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,R=r.width*.32,d=Math.min(R,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);moveX=Math.cos(a)*d/R;moveZ=Math.sin(a)*d/R;knob.style.transform=`translate(${moveX*R}px,${moveZ*R}px)`}
@@ -769,6 +787,7 @@ function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDel
  for(let i=fxs.length-1;i>=0;i--){const f=fxs[i];f.t+=dt;const sp=toScreen(f.x,f.y+f.t*1.6,f.z);if(f.t>1||!sp){f.el.remove();fxs.splice(i,1);continue}f.el.style.transform=`translate(${sp[0]+f.dx*f.t}px,${sp[1]}px) translate(-50%,-50%)`;f.el.style.opacity=1-Math.max(0,f.t-.6)/.4}
  // tugasan berkala
  slowT-=dt;if(slowT<=0){slowT=.4;updateGrass();const hx=hero.position.x,hz=hero.position.z,d=Math.hypot(hx,hz);$('#area').textContent=`${BIOMES[biomeOf(hx,hz)].name} • Musuh ~Lv${lvlAt(d)}`;
+  {const hx2=hero.position.x,hz2=hero.position.z;let w=['hutan','batu','savana','paya','rimba'][biomeOf(hx2,hz2)];if(FIRES.some(f=>Math.hypot(f.x-hx2,f.z-hz2)<16))w='kem';if(mobs.some(m=>m.def.boss&&!m.dead&&Math.hypot(m.x-hx2,m.z-hz2)<70))w='bos';musWant(w)}
   let best=null,bd=1e9;for(const f of FIRES){const fd=Math.hypot(f.x-hx,f.z-hz);if(fd<bd){bd=fd;best=f}}nearFire=best;fireLight.position.set(best.x,best.g.position.y+2,best.z);
   if(bd<9&&!P.dead&&(!best.found||P.spawn[0]!==best.x)){const first=!best.found,idx=FIRES.indexOf(best);best.found=true;P.spawn=[best.x,best.z];dirty=true;if(first)toast(idx===0?'UNGGUN API DITEMUI!\nPERMULAAN PENGEMBARAAN':`KEM DITEMUI\n${best.name}`,2800);if(idx===0)hint('Buru haiwan & raksasa untuk XP — makin jauh dari pusat, makin kuat musuhnya')}
   if(Math.max(Math.abs(hx),Math.abs(hz))>LIMIT-5)hint('Sempadan dunia — gunung terlalu curam untuk didaki')}

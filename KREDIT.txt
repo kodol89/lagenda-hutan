@@ -10,3 +10,7 @@ https://polyhaven.com
 Pokok, batu, rumput, semak, bunga: "Stylized Nature MegaKit" oleh Quaternius - CC0 1.0
 Prop (peti, tong, kotak, gerai, panji, syiling, ramuan dll): "Fantasy Props MegaKit" oleh Quaternius - CC0 1.0
 Kereta sorong & pagar: "Medieval Village MegaKit" oleh Quaternius - CC0 1.0
+
+Muzik: "Music Loop Bundle" oleh Abstraction (https://tallbeard.itch.io/music-loop-bundle , https://abstractionmusic.com) - CC0 1.0
+  pilih = Lift You Up (Melody), hutan = Vacation Day (Adventure), kem = Vacation Day (Chillout), batu = Freefall (What A View),
+  savana = Dust Bowl (Parched), paya = Dark Portents (Mysterious Traveler), rimba = Dark Portents (Shrouded Future), bos = Pull Me Down (Gravity)
