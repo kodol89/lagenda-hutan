@@ -1,0 +1,6 @@
+Model wira (Warrior, Ranger, Wizard): "RPG Characters" oleh Quaternius - CC0 1.0
+Model monster (Bunny, Frog, Cactoro, Orc, Yeti, Demon): "Ultimate Monsters" oleh Quaternius - CC0 1.0
+Model haiwan (Wolf, Deer, Bull, Stag, Fox): "Ultimate Animated Animals" oleh Quaternius - CC0 1.0
+https://quaternius.com
+
+Fail models/*.js ialah model GLB yang dibungkus dalam JavaScript supaya game boleh dibuka terus tanpa server.
