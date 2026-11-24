@@ -90,7 +90,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 <div id="hurt"></div>
 <div id="top">
  <div class="col">
-  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.1.1</div></div>
+  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.1.2</div></div>
   <a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="musB" class="musB">🔊 MUZIK</a>
  </div>
  <div class="col r">
@@ -136,11 +136,11 @@ function musInit(){if(!MZ.on)return;try{if(navigator.audioSession)navigator.audi
 for(const ev of['pointerdown','pointerup','touchend','click','keydown'])addEventListener(ev,musInit,{capture:true});
 document.addEventListener('visibilitychange',()=>{if(!MZ.ctx)return;if(document.hidden)MZ.ctx.suspend();else if(MZ.on)MZ.ctx.resume();if(MZ.fb){document.hidden?MZ.fb.pause():MZ.on&&MZ.fb.play().catch(()=>{})}});
 function musLoad(n){if(MZ.buf[n])return Promise.resolve(MZ.buf[n]);if(location.protocol==='file:')return Promise.resolve(null);
- return MZ.loading[n]||(MZ.loading[n]=fetch('music/'+n+'.m4a').then(r=>{if(!r.ok)throw Error(r.status);return r.arrayBuffer()}).then(ab=>new Promise((ok,no)=>MZ.ctx.decodeAudioData(ab,ok,no))).then(b=>(MZ.buf[n]=b)).catch(e=>{console.warn('Muzik gagal',n,e);return null}))}
+ return MZ.loading[n]||(MZ.loading[n]=fetch('music/'+n+'.m4a').then(r=>r.ok?r:fetch(n+'.m4a')).then(r=>{if(!r.ok)throw Error(r.status);return r.arrayBuffer()}).then(ab=>new Promise((ok,no)=>MZ.ctx.decodeAudioData(ab,ok,no))).then(b=>(MZ.buf[n]=b)).catch(e=>{console.warn('Muzik gagal',n,e);return null}))}
 async function musPlay(n,force){MZ.want=n;if(!MZ.on||!MZ.ctx)return;if(MZ.curName===n&&!force)return;MZ.curName=n;const b=await musLoad(n);if(MZ.want!==n||!MZ.on)return;
  if(!b){musFallback(n);return}const t=MZ.ctx.currentTime,src=MZ.ctx.createBufferSource(),g=MZ.ctx.createGain();src.buffer=b;src.loop=true;src.loopStart=0;src.loopEnd=Math.min(MUS[n]||b.duration,b.duration);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+2.5);src.connect(g);g.connect(MZ.gain);src.start();
  if(MZ.cur){const o=MZ.cur;o.g.gain.cancelScheduledValues(t);o.g.gain.setValueAtTime(o.g.gain.value,t);o.g.gain.linearRampToValueAtTime(0,t+2.5);setTimeout(()=>{try{o.src.stop()}catch(e){}},2800)}MZ.cur={src,g}}
-function musFallback(n){if(MZ.fb)MZ.fb.pause();const a=new Audio('music/'+n+'.m4a');a.loop=true;a.volume=.5;a.play().catch(()=>{});MZ.fb=a}
+function musFallback(n){if(MZ.fb)MZ.fb.pause();const a=new Audio('music/'+n+'.m4a');a.loop=true;a.volume=.5;a.onerror=()=>{if(!a.dataset.alt){a.dataset.alt=1;a.src=n+'.m4a';a.play().catch(()=>{})}};a.play().catch(()=>{});MZ.fb=a}
 function musWant(n){if(n===MZ.cand)MZ.candN++;else{MZ.cand=n;MZ.candN=1}if(MZ.candN>=3||!MZ.curName)musPlay(n)}
 function musToggle(){MZ.on=!MZ.on;try{localStorage.setItem('lhb_music',MZ.on?'1':'0')}catch(e){}if(!MZ.on){if(MZ.cur){try{MZ.cur.src.stop()}catch(e){}MZ.cur=null}if(MZ.fb){MZ.fb.pause();MZ.fb=null}MZ.curName=null}else{if(MZ.ctx&&MZ.want){if(MZ.ctx.state==='suspended')MZ.ctx.resume();musPlay(MZ.want,true)}else musInit()}musBtns()}
 function musBtns(){document.querySelectorAll('.musB').forEach(b=>b.textContent=MZ.on?'🔊 MUZIK':'🔇 MUZIK')}
