@@ -8,3 +8,5 @@ Fail models/*.js ialah model GLB yang dibungkus dalam JavaScript supaya game bol
 Langit HDRI: "Kloofendal 48d Partly Cloudy (Pure Sky)" dari Poly Haven - CC0 1.0
 https://polyhaven.com
 Pokok, batu, rumput, semak, bunga: "Stylized Nature MegaKit" oleh Quaternius - CC0 1.0
+Prop (peti, tong, kotak, gerai, panji, syiling, ramuan dll): "Fantasy Props MegaKit" oleh Quaternius - CC0 1.0
+Kereta sorong & pagar: "Medieval Village MegaKit" oleh Quaternius - CC0 1.0
