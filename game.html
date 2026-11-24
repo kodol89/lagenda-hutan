@@ -84,87 +84,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 @media (hover:hover) and (pointer:fine){.mobile-only{display:none!important}#hint{bottom:128px}}
 @media (hover:none),(pointer:coarse){.desktop-only{display:none!important}#hint{bottom:200px}}
 @media(max-width:600px){.brand{letter-spacing:.5px}.sub{font-size:9px;letter-spacing:.5px}.stats{min-width:138px}#mini{width:96px;height:96px}#hint{font-size:10px;max-width:86vw}#stick{width:110px;height:110px}#knob{left:31px;top:31px}#attack{width:78px;height:78px}#toast{font-size:17px}}
-</style>
-<style id="hero-redesign">
-/* LEGENDARY CHARACTER SELECT — visual refresh */
-#pick{
-  background:
-    radial-gradient(ellipse at 51% 43%,rgba(34,105,75,.48),transparent 42%),
-    radial-gradient(ellipse at 15% 70%,rgba(22,67,52,.38),transparent 38%),
-    linear-gradient(115deg,#030a09 0%,#071a17 48%,#080d18 100%);
-}
-#pick:before{
-  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;opacity:.32;
-  background:repeating-linear-gradient(115deg,transparent 0 90px,rgba(125,220,174,.055) 91px 93px,transparent 94px 180px);
-  mask-image:linear-gradient(to bottom,transparent,#000 20%,#000 80%,transparent);
-}
-#pick:after{
-  background:radial-gradient(ellipse at 48% 48%,transparent 34%,rgba(0,0,0,.28) 76%,#000d 100%);
-}
-.pk-top{top:22px;z-index:4}
-.pk-top small{font-size:10px;letter-spacing:7px;color:#b4d8c5;text-shadow:0 2px 8px #000}
-.pk-top h1{font-size:clamp(34px,5.4vw,64px);letter-spacing:8px;filter:drop-shadow(0 5px 18px #e6a83b66)}
-.pk-top p{color:#c3d8cc;letter-spacing:.4px;font-size:12px}
-.pk-panel{
-  right:clamp(18px,3vw,52px);width:clamp(310px,25vw,390px);
-  padding:22px;border-radius:22px;border-color:color-mix(in srgb,var(--c),white 25%);
-  background:linear-gradient(150deg,rgba(12,35,29,.94),rgba(4,11,15,.94) 76%);
-  box-shadow:0 18px 70px #0009,0 0 34px -12px var(--c),inset 0 1px #ffffff22;
-}
-.pk-role{letter-spacing:2.3px;padding:5px 11px;box-shadow:0 0 18px color-mix(in srgb,var(--c),transparent 65%)}
-.pk-name{font-size:clamp(29px,3vw,39px);letter-spacing:1px;margin:12px 0 7px}
-.pk-lore{font-size:12px;line-height:1.65;color:#d4e1d8}
-.pk-stat{grid-template-columns:76px 1fr 30px;margin:8px 0;font-size:11px}
-.pk-stat .bar2{height:7px;background:#ffffff18}
-.pk-sk{padding:9px;border-radius:13px;background:linear-gradient(100deg,#ffffff0d,#ffffff04);border-color:#ffffff17}
-.pk-sk .si{width:39px;height:39px}
-.pk-sk b{font-size:12px;letter-spacing:.2px}
-.pk-sk span{display:block;margin-top:3px}
-.pk-go{border-radius:12px;letter-spacing:2.5px;padding:15px;margin-top:17px}
-.pk-tabs{
-  left:50%;bottom:24px;transform:translateX(-50%);gap:12px;z-index:5;
-}
-.pk-tab{
-  width:164px;min-height:62px;padding:10px 12px 10px 58px;
-  border-radius:15px;background:linear-gradient(145deg,#102a25e8,#07120fee);
-  border-color:#d8e8dc2b;box-shadow:0 9px 24px #0005;
-}
-.pk-tab .ic{width:39px;height:39px;left:10px;border:1px solid color-mix(in srgb,var(--tc),transparent 55%)}
-.pk-tab b{font-size:14px;letter-spacing:1.2px}
-.pk-tab i{font-size:10px}
-.pk-tab.on{box-shadow:0 0 0 1px var(--tc),0 0 30px -5px var(--tc),0 10px 30px #0008}
-.pk-arrow{top:47%;background:#07130fdd;box-shadow:0 4px 18px #0008}
-.pk-mus{background:#07130fdd;border-color:#d9b56877}
-#pickCv{z-index:0}
-@media(max-width:820px),(orientation:portrait){
- .pk-top{top:12px}
- .pk-top small{font-size:8px;letter-spacing:4px}
- .pk-top h1{font-size:clamp(27px,8vw,42px);letter-spacing:4px}
- .pk-panel{left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:43vh;padding:13px 14px}
- .pk-name{font-size:25px;margin:6px 0}
- .pk-role{font-size:9px}
- .pk-lore{display:none}
- .pk-stat{margin:5px 0}
- .pk-h{margin:9px 0 5px}
- .pk-sk{padding:6px;margin-bottom:4px}
- .pk-sk .si{width:31px;height:31px}
- .pk-go{padding:12px;margin-top:9px;font-size:13px}
- .pk-tabs{left:50%;bottom:calc(min(43vh,500px) + 23px);gap:5px;width:calc(100% - 24px);justify-content:center}
- .pk-tab{flex:1;min-width:0;width:auto;min-height:48px;padding:7px 5px 7px 35px}
- .pk-tab .ic{width:25px;height:25px;left:6px;font-size:14px}
- .pk-tab b{font-size:10px;letter-spacing:.4px}
- .pk-arrow{top:34%}
-}
-@media(max-width:390px){
- .pk-panel{max-height:45vh}
- .pk-tabs{bottom:calc(45vh + 20px)}
- .pk-tab{padding-left:31px}
- .pk-tab .ic{left:4px;width:23px;height:23px}
- .pk-tab b{font-size:9px}
-}
-</style>
-
-</head><body>
+</style></head><body>
 <div id="game"></div>
 <div id="labels"></div>
 <div id="hurt"></div>
@@ -286,7 +206,7 @@ async function runPick(start){
  const ptsP=new THREE.Points(pg,pmat);ptsP.frustumCulled=false;S.add(ptsP);
  // muat model
  await Promise.all(K.map(k=>window.LHB_MODELS&&window.LHB_MODELS[k]?true:ldS('models/'+k+'.js')));const L=new GLTFLoader();
- for(const h of H){const b=window.LHB_MODELS&&window.LHB_MODELS[h.k];if(!b)continue;try{const g=await new Promise((r,j)=>L.parse(b2b(b),'',r,j));const m=g.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);const sc=2.3/((box.max.y-box.min.y)||1);m.scale.setScalar(sc);m.position.y=.55-box.min.y*sc;addLegendaryArmor(m,2.3,COL[H.indexOf(h)]);h.grp.add(m);h.model=m;
+ for(const h of H){const b=window.LHB_MODELS&&window.LHB_MODELS[h.k];if(!b)continue;try{const g=await new Promise((r,j)=>L.parse(b2b(b),'',r,j));const m=g.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);const sc=2.3/((box.max.y-box.min.y)||1);m.scale.setScalar(sc);m.position.y=.55-box.min.y*sc;h.grp.add(m);h.model=m;
   h.mixer=new THREE.AnimationMixer(m);for(const c of g.animations)h.acts[c.name]=h.mixer.clipAction(c);h.mixer.addEventListener('finished',()=>{if(H[sel]===h)hp(h,COMBAT[H.indexOf(h)])})}catch(e){console.warn('Ralat model pilih',h.k,e)}}
  function hp(h,n,once=false,ts=1){const a=h.acts[n]||h.acts.Idle;if(!a)return;if(h.cur===a&&!once)return;a.reset();a.setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,Infinity);a.clampWhenFinished=once;a.timeScale=ts;a.play();if(h.cur&&h.cur!==a)a.crossFadeFrom(h.cur,.25,false);h.cur=a}
  H.forEach(h=>{hp(h,'Idle');if(h.cur)h.cur.time=Math.random()*2});
@@ -316,28 +236,6 @@ async function runPick(start){
  alive=false;cancelAnimationFrame(raf);removeEventListener('resize',size);removeEventListener('keydown',kh);R.dispose();try{R.forceContextLoss()}catch(e){}pk.hidden=true;pk.classList.remove('out');
  for(const k of K)if(k!==chosen&&window.LHB_MODELS)delete window.LHB_MODELS[k];
  return chosen}
-
-// ---- identiti visual wira: topeng visor tanpa wajah + perisai premium ----
-function addLegendaryArmor(root, height=2.3, tint=0xc89a48){
- const s=height/2.3, gold=new THREE.MeshStandardMaterial({color:tint,metalness:.82,roughness:.24}),
-       dark=new THREE.MeshStandardMaterial({color:0x07121a,metalness:.58,roughness:.2}),
-       glow=new THREE.MeshStandardMaterial({color:0x75e8c1,emissive:0x1a9d78,emissiveIntensity:1.15,metalness:.35,roughness:.22});
- const piece=(geo,mat,pos,rot)=>{const m=new THREE.Mesh(geo,mat);m.position.set(pos[0]*s,pos[1]*s,pos[2]*s);if(rot)m.rotation.set(...rot);m.castShadow=true;m.receiveShadow=true;root.add(m);return m};
- // Helmet shell and a single dark visor fully concealing facial features.
- piece(new THREE.SphereGeometry(.355*s,16,12),gold,[0,1.99,0],[0,0,0]).scale.set(1,1.12,.92);
- piece(new THREE.SphereGeometry(.292*s,16,12),dark,[0,1.98,.185*s],[0,0,0]).scale.set(1,.64,.42);
- piece(new THREE.BoxGeometry(.49*s,.055*s,.055*s),gold,[0,2.18*s,.235*s]);
- piece(new THREE.BoxGeometry(.29*s,.025*s,.035*s),glow,[0,2.00*s,.255*s]);
- // Angular cheek guards, shoulder plates and chest crest.
- for(const side of [-1,1]){
-   piece(new THREE.BoxGeometry(.14*s,.34*s,.22*s),gold,[side*.30*s,1.88*s,.12*s],[0,0,side*-.18]);
-   const pauldron=piece(new THREE.SphereGeometry(.27*s,12,9),gold,[side*.43*s,1.57*s,0],[0,0,side*-.18]);
-   pauldron.scale.set(1.28,.62,1.08);
-   piece(new THREE.BoxGeometry(.10*s,.28*s,.12*s),dark,[side*.43*s,1.28*s,.13*s],[0,0,side*.12]);
- }
- piece(new THREE.OctahedronGeometry(.105*s,0),glow,[0,1.48*s,.245*s]);
-}
-
 const C=CLASSES[CLS];
 // model dimuat melalui <script> (berfungsi juga bila fail dibuka terus tanpa server)
 const modelP=new Promise(res=>{const get=()=>window.LHB_MODELS&&window.LHB_MODELS[CLS]||null;if(get())return res(get());const sc=document.createElement('script');sc.src='models/'+CLS+'.js';sc.onload=()=>res(get());sc.onerror=()=>res(null);document.head.appendChild(sc);setTimeout(()=>res(null),30000)});
@@ -573,8 +471,8 @@ for(const f of FIRES){const g=new THREE.Group();g.position.set(f.x,heightAt(f.x,
 const fireLight=new THREE.PointLight(0xff9a35,3,26);scene.add(fireLight);
 
 // ================= WIRA =================
-const hero=new THREE.Group();scene.add(hero);const heroRig=new THREE.Group();hero.add(heroRig);const skin=mat(0xd5a276),armor=mat(0x344e46),cloth=mat(0x8c3428),gold=mat(0xd5a64e),steel=mat(0xb9c7c4,.35),dark=mat(0x292b2a),glow=mat(0x75e8c1,.3);
-mesh(heroRig,new THREE.CylinderGeometry(.42,.55,1.15,8),armor,[0,1.65,0]);mesh(heroRig,new THREE.SphereGeometry(.48,10,8),cloth,[0,1.48,.02]);mesh(heroRig,new THREE.SphereGeometry(.36,12,10),gold,[0,2.48,0]);mesh(heroRig,new THREE.SphereGeometry(.29,12,8),dark,[0,2.48,.20]).scale.set(1,.62,.38);const helm=mesh(heroRig,new THREE.ConeGeometry(.43,.58,8),gold,[0,2.91,0]);helm.rotation.z=.08;mesh(heroRig,new THREE.BoxGeometry(.50,.05,.06),glow,[0,2.49,.31]);
+const hero=new THREE.Group();scene.add(hero);const heroRig=new THREE.Group();hero.add(heroRig);const skin=mat(0xd5a276),armor=mat(0x344e46),cloth=mat(0x8c3428),gold=mat(0xd5a64e),steel=mat(0xb9c7c4,.35),dark=mat(0x292b2a);
+mesh(heroRig,new THREE.CylinderGeometry(.42,.55,1.15,8),armor,[0,1.65,0]);mesh(heroRig,new THREE.SphereGeometry(.48,10,8),cloth,[0,1.48,.02]);mesh(heroRig,new THREE.SphereGeometry(.34,12,10),skin,[0,2.48,0]);const helm=mesh(heroRig,new THREE.ConeGeometry(.43,.58,8),gold,[0,2.91,0]);helm.rotation.z=.08;mesh(heroRig,new THREE.BoxGeometry(.52,.12,.16),dark,[0,2.47,.28]);
 const limbs=[];for(const side of[-1,1]){const arm=new THREE.Group();arm.position.set(side*.53,2.05,0);heroRig.add(arm);mesh(arm,new THREE.CylinderGeometry(.16,.19,.78,7),armor,[0,-.35,0]);mesh(arm,new THREE.SphereGeometry(.16,8,7),skin,[0,-.76,.02]);limbs.push(arm);const leg=new THREE.Group();leg.position.set(side*.24,1.12,0);heroRig.add(leg);mesh(leg,new THREE.CylinderGeometry(.19,.22,.72,7),dark,[0,-.35,0]);mesh(leg,new THREE.BoxGeometry(.3,.18,.48),dark,[0,-.72,.12]);limbs.push(leg)}
 const [armL,legL,armR,legR]=limbs;
 const sword=new THREE.Group();sword.position.set(0,-.78,.04);sword.rotation.x=Math.PI/2;armR.add(sword);mesh(sword,new THREE.BoxGeometry(.12,.18,.13),gold,[0,0,0]);mesh(sword,new THREE.BoxGeometry(.34,.06,.1),gold,[0,.12,0]);mesh(sword,new THREE.BoxGeometry(.12,1.25,.055),steel,[0,.78,0]);const tip=mesh(sword,new THREE.ConeGeometry(.085,.24,4),steel,[0,1.52,0]);
@@ -585,7 +483,7 @@ function b64ToBuf(b){const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.
 function play(name,once=false,ts=1,fade=.18){const a=A.actions[name];if(!a)return null;if(A.cur===a&&!once){a.timeScale=ts;return a}a.reset();a.setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,Infinity);a.clampWhenFinished=once;a.timeScale=ts;a.setEffectiveWeight(1);a.play();if(A.cur&&A.cur!==a)a.crossFadeFrom(A.cur,fade,false);A.cur=a;return a}
 async function setupModel(){const b64=await modelP;if(!b64){console.warn('Model tidak dimuat — guna model asas');return}
  try{const gltf=await new Promise((res,rej)=>new GLTFLoader().parse(b64ToBuf(b64),'',res,rej));const m=gltf.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false}});
-  m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);const h=(box.max.y-box.min.y)||1,sc=3.0/h;m.scale.setScalar(sc);m.position.y=-box.min.y*sc;addLegendaryArmor(m,3.0,0xc89a48);
+  m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);const h=(box.max.y-box.min.y)||1,sc=3.0/h;m.scale.setScalar(sc);m.position.y=-box.min.y*sc;
   hero.remove(heroRig);hero.add(m);A.mixer=new THREE.AnimationMixer(m);for(const clip of gltf.animations)A.actions[clip.name]=A.mixer.clipAction(clip);play(C.idle)}catch(e){console.warn('Ralat model',e)}}
 // ---- templat monster (Quaternius Ultimate Monsters) ----
 const MONT={};
