@@ -107,7 +107,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 <div id="hurt"></div><div id="thunderFx"></div>
 <div id="top">
  <div class="col">
-  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.5</div></div>
+  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 1.6</div></div>
   <a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="musB" class="musB">🔊 MUZIK</a><a id="sfxB">🔔 BUNYI</a><a id="fsB">⛶ SKRIN PENUH</a><a id="invB">🎒 BEG [I]</a>
  </div>
  <div class="col r">
@@ -365,8 +365,19 @@ const CG=10,colGrid=new Map();
 function addCol(x,z,r){const k=Math.floor(x/CG)*10007+Math.floor(z/CG);let L=colGrid.get(k);if(!L)colGrid.set(k,L=[]);L.push({x,z,r})}
 function pushOut(p,rad){const ci=Math.floor(p.x/CG),cj=Math.floor(p.z/CG);for(let i=ci-1;i<=ci+1;i++)for(let j=cj-1;j<=cj+1;j++){const L=colGrid.get(i*10007+j);if(!L)continue;for(const o of L){const dx=p.x-o.x,dz=p.z-o.z,d=Math.hypot(dx,dz),m=o.r+rad;if(d<m&&d>1e-4){p.x=o.x+dx/d*m;p.z=o.z+dz/d*m}}}}
 // batu: permukaan yang boleh dipijak / dipanjat
-const RG=new Map();function addRock(x,z,r,base,top){const k=Math.floor(x/CG)*10007+Math.floor(z/CG);let L=RG.get(k);if(!L)RG.set(k,L=[]);L.push({x,z,r,base,top})}
-function rockTop(x,z){let best=-1e9;const ci=Math.floor(x/CG),cj=Math.floor(z/CG);for(let i=ci-1;i<=ci+1;i++)for(let j=cj-1;j<=cj+1;j++){const L=RG.get(i*10007+j);if(!L)continue;for(const o of L){const d=Math.hypot(x-o.x,z-o.z);if(d<o.r){const y=o.base+(o.top-o.base)*Math.pow(1-(d/o.r)*(d/o.r),.35);if(y>best)best=y}}}return best}
+const RG=new Map();function addRock(x,z,r,base,top){const k=Math.floor(x/CG)*10007+Math.floor(z/CG);let L=RG.get(k);if(!L)RG.set(k,L=[]);const o={x,z,r,base,top};L.push(o);return o}
+// permukaan batu sebenar: grid ketinggian dibina daripada geometri batu (sekali sahaja, bila diperlukan)
+let ROCKGEO=null;const HFN=22;
+function rockHF(o){const g=ROCKGEO&&ROCKGEO[o.g];if(!g||!g.attributes||!g.attributes.position||!o.m.elements)return null;const pa=g.attributes.position,ix=g.index,n=pa.count,M=o.m.elements,wx=new Float32Array(n),wy=new Float32Array(n),wz=new Float32Array(n);let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;
+ for(let i=0;i<n;i++){const x=pa.getX(i),y=pa.getY(i),z=pa.getZ(i);wx[i]=M[0]*x+M[4]*y+M[8]*z+M[12];wy[i]=M[1]*x+M[5]*y+M[9]*z+M[13];wz[i]=M[2]*x+M[6]*y+M[10]*z+M[14];if(wx[i]<x0)x0=wx[i];if(wx[i]>x1)x1=wx[i];if(wz[i]<z0)z0=wz[i];if(wz[i]>z1)z1=wz[i]}
+ const dx=(x1-x0)/HFN||1,dz=(z1-z0)/HFN||1,N1=HFN+1,H=new Float32Array(N1*N1).fill(-1e9),tc=(ix?ix.count:n)/3;
+ for(let t=0;t<tc;t++){const a=ix?ix.getX(t*3):t*3,b=ix?ix.getX(t*3+1):t*3+1,c=ix?ix.getX(t*3+2):t*3+2;const ax=wx[a],az=wz[a],bx=wx[b],bz=wz[b],cx=wx[c],cz=wz[c];const det=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);if(Math.abs(det)<1e-9)continue;
+  const i0=Math.max(0,Math.ceil((Math.min(ax,bx,cx)-x0)/dx)),i1=Math.min(HFN,Math.floor((Math.max(ax,bx,cx)-x0)/dx)),j0=Math.max(0,Math.ceil((Math.min(az,bz,cz)-z0)/dz)),j1=Math.min(HFN,Math.floor((Math.max(az,bz,cz)-z0)/dz));
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const px=x0+i*dx,pz=z0+j*dz,l0=((bz-cz)*(px-cx)+(cx-bx)*(pz-cz))/det,l1=((cz-az)*(px-cx)+(ax-cx)*(pz-cz))/det,l2=1-l0-l1;if(l0<-1e-4||l1<-1e-4||l2<-1e-4)continue;const y=l0*wy[a]+l1*wy[b]+l2*wy[c];if(y>H[j*N1+i])H[j*N1+i]=y}}
+ return o.hf={x0,z0,dx,dz,H}}
+function hfAt(h,x,z){const fx=(x-h.x0)/h.dx,fz=(z-h.z0)/h.dz;if(fx<-.5||fz<-.5||fx>HFN+.5||fz>HFN+.5)return -1e9;const i=Math.min(HFN-1,Math.max(0,fx|0)),j=Math.min(HFN-1,Math.max(0,fz|0)),u=Math.min(1,Math.max(0,fx-i)),v=Math.min(1,Math.max(0,fz-j)),N1=HFN+1,a=h.H[j*N1+i],b=h.H[j*N1+i+1],c=h.H[(j+1)*N1+i],d=h.H[(j+1)*N1+i+1];
+ if(a>-1e8&&b>-1e8&&c>-1e8&&d>-1e8)return(a*(1-u)+b*u)*(1-v)+(c*(1-u)+d*u)*v;const k=(Math.round(v)*N1)+Math.round(u);return[a,b,c,d][[0,1,2,3][(Math.round(v)<<1)|Math.round(u)]]}
+function rockTop(x,z){let best=-1e9;const ci=Math.floor(x/CG),cj=Math.floor(z/CG);for(let i=ci-1;i<=ci+1;i++)for(let j=cj-1;j<=cj+1;j++){const L=RG.get(i*10007+j);if(!L)continue;for(const o of L){const d=Math.hypot(x-o.x,z-o.z);if(o.m&&ROCKGEO){if(d>o.r*2.2+2)continue;const h=o.hf||rockHF(o);if(h){const y=hfAt(h,x,z);if(y>best)best=y;continue}}if(d<o.r){const y=o.base+(o.top-o.base)*Math.pow(1-(d/o.r)*(d/o.r),.35);if(y>best)best=y}}}return best}
 const groundAt=(x,z)=>Math.max(heightAt(x,z),rockTop(x,z));
 function pushRocks(p,rad){const ci=Math.floor(p.x/CG),cj=Math.floor(p.z/CG);for(let i=ci-1;i<=ci+1;i++)for(let j=cj-1;j<=cj+1;j++){const L=RG.get(i*10007+j);if(!L)continue;for(const o of L){const dx=p.x-o.x,dz=p.z-o.z,d=Math.hypot(dx,dz),m=o.r*.85+rad;if(d<m&&d>1e-4){p.x=o.x+dx/d*m;p.z=o.z+dz/d*m}}}}
 const CROWN=[[0x315e39,0x3b7041,0x477b45],[0x3d5a45],[0x6d8a3a,0x7a923f,0x83953f],[0x4a5e32,0x56693a],[0x1d3a24,0x24452a,0x2b4d2c]];
@@ -381,12 +392,12 @@ function addTree(x,z,h,b){const big=b===4,s=big?1+SR()*1.1:.7+SR()*.8,tc=b===4?0
  addCol(x,z,.75*s);tAdd({x,z,h,s,rot,refs,kind:b===2?'sav':b===3?'swamp':'broad',id:TREES.length})}
 function addPine(x,z,h){const s=.8+SR()*.9,rot=SR()*6.28,refs=[];dummy.rotation.set(0,rot,0);dummy.position.set(x,h-.1,z);dummy.scale.set(s*.7,s*.5,s*.7);refs.push(put('trunk',0x5a3f2a));dummy.position.set(x,h+1.5*s,z);dummy.scale.setScalar(s);refs.push(put('pine',pickc(PINE)));addCol(x,z,.55*s);tAdd({x,z,h,s,rot,refs,kind:'pine',id:TREES.length})}
 for(let i=0;i<90000;i++){const x=(SR()-.5)*(WORLD-80),z=(SR()-.5)*(WORLD-80),w=weights(x,z),b=argmax(w);let pT=0,pP=0;for(let k=0;k<5;k++){pT+=w[k]*BIOMES[k].tree;pP+=w[k]*BIOMES[k].pine}const r=SR();if(r>pT+pP)continue;if(Math.hypot(x,z)<14||roadDist(x,z)<4.5||fireDist(x,z)<10||lairDist(x,z)<LAIR.r)continue;const h=heightAt(x,z);if(h<WL-.35||(h<WL+.1&&b!==3)||h>27)continue;if(r<pT)addTree(x,z,h,b);else addPine(x,z,h)}
-for(let i=0;i<26000;i++){const x=(SR()-.5)*(WORLD-60),z=(SR()-.5)*(WORLD-60),w=weights(x,z),b=argmax(w);let p=0;for(let k=0;k<5;k++)p+=w[k]*BIOMES[k].rock;if(SR()>p)continue;if(Math.hypot(x,z)<10||roadDist(x,z)<3.5||fireDist(x,z)<6||lairDist(x,z)<LAIR.r-6)continue;const h=heightAt(x,z);const s=b===1?.6+Math.pow(SR(),2)*3.6:.4+SR()*1.2;dummy.position.set(x,h+.12*s,z);dummy.rotation.set((SR()-.5)*.6,SR()*6.28,(SR()-.5)*.6);const fx_=.8+SR()*.5,fy_=.45+SR()*.35,fz_=.8+SR()*.5;dummy.scale.set(s*fx_,s*fy_,s*fz_);put('rock'+((SR()*3)|0),b===3?0x5f6b4e:pickc(ROCKC));if(s>.7)addRock(x,z,s*(fx_+fz_)*.45,h,h+.12*s+.88*s*fy_)}
+for(let i=0;i<26000;i++){const x=(SR()-.5)*(WORLD-60),z=(SR()-.5)*(WORLD-60),w=weights(x,z),b=argmax(w);let p=0;for(let k=0;k<5;k++)p+=w[k]*BIOMES[k].rock;if(SR()>p)continue;if(Math.hypot(x,z)<10||roadDist(x,z)<3.5||fireDist(x,z)<6||lairDist(x,z)<LAIR.r-6)continue;const h=heightAt(x,z);const s=b===1?.6+Math.pow(SR(),2)*3.6:.4+SR()*1.2;dummy.position.set(x,h+.12*s,z);dummy.rotation.set((SR()-.5)*.6,SR()*6.28,(SR()-.5)*.6);const fx_=.8+SR()*.5,fy_=.45+SR()*.35,fz_=.8+SR()*.5;dummy.scale.set(s*fx_,s*fy_,s*fz_);const rv='rock'+((SR()*3)|0);put(rv,b===3?0x5f6b4e:pickc(ROCKC));if(s>.7){const o=addRock(x,z,s*(fx_+fz_)*.45,h,h+.12*s+.88*s*fy_);o.m=dummy.matrix.clone();o.g=rv}}
 // bina InstancedMesh (dipanggil selepas model alam dimuat; batu guna model sebenar jika ada)
 const mm4=new THREE.Matrix4(),ZERO4=new THREE.Matrix4().makeScale(0,0,0),WHITE=new THREE.Color(0xffffff);
 function buildInstances(){const trunkG=new THREE.CylinderGeometry(.38,.65,5.5,7);trunkG.translate(0,2.75,0);const pineG=new THREE.ConeGeometry(2.3,6.5,7);pineG.translate(0,3.25,0);const dod=new THREE.DodecahedronGeometry(1,0);
  const flat=()=>new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,flatShading:true});const MT={trunk:flat(),crown:flat(),pine:flat()},G={trunk:trunkG,crown:new THREE.IcosahedronGeometry(2.7,0),pine:pineG};
- for(let v=0;v<3;v++){const r=NAT&&NAT['Rock_Medium_'+(v+1)];G['rock'+v]=r?r.rockGeo:dod;MT['rock'+v]=r?r.parts[0].mat:MT.rock0||flat()}
+ for(let v=0;v<3;v++){const r=NAT&&NAT['Rock_Medium_'+(v+1)];G['rock'+v]=r?r.rockGeo:dod;MT['rock'+v]=r?r.parts[0].mat:MT.rock0||flat()}ROCKGEO={rock0:G.rock0,rock1:G.rock1,rock2:G.rock2};
  for(const b of buckets.values()){const n=b.c.length,im=new THREE.InstancedMesh(G[b.type],MT[b.type],n);const tex=b.type.startsWith('rock')&&NAT;for(let i=0;i<n;i++){mm4.fromArray(b.m,i*16);im.setMatrixAt(i,mm4);tmpC.setHex(b.c[i]);if(tex)tmpC.lerp(WHITE,.55);im.setColorAt(i,tmpC)}b.m=new Float32Array(b.m);b.c=null;im.computeBoundingSphere();im.castShadow=true;im.receiveShadow=b.type.startsWith('rock');b.im=im;scene.add(im)}}
 
 // ---- alam semula jadi: Quaternius Stylized Nature MegaKit ----
@@ -678,7 +689,7 @@ function spawnMob(near){for(let t=0;t<10;t++){const a=Math.random()*Math.PI*2,d=
 let PAUSED=false,nearNPC=null;const dlgEl=$('#dlg'),invEl=$('#inv');
 const F0=FIRES[0],A0=hash(0,3)*6.28,campPt=(r,a)=>[F0.x+Math.cos(A0+a)*r,F0.z+Math.sin(A0+a)*r];
 const NPCS=[{id:'batin',name:'Tok Batin',role:'KETUA KEM • QUEST',ic:'📜',model:'NPC_M',tint:0x8fb0ff,anim:'Idle_Weapon',pos:campPt(6.2,1.75)},{id:'besi',name:'Pak Daud',role:'TUKANG BESI • NAIK TARAF',ic:'⚒️',model:'NPC_M',anim:'Idle',pos:campPt(7,5.95)},{id:'niaga',name:'Mak Som',role:'PENIAGA • RAMUAN & BAHAN',ic:'🧪',model:'NPC_F',anim:'Talk',pos:campPt(6.6,4.75)}];
-NPCS.forEach(n=>{n.x=n.pos[0];n.z=n.pos[1];n.y=heightAt(n.x,n.z);n.rot=Math.atan2(F0.x-n.x,F0.z-n.z);addRock(n.x,n.z,.8,n.y,n.y+3)});
+NPCS[1].pos=campPt(6.9,6.3);NPCS.forEach(n=>{n.x=n.pos[0];n.z=n.pos[1];n.y=heightAt(n.x,n.z);n.rot=Math.atan2(F0.x-n.x,F0.z-n.z)});
 deco('Anvil',...campPt(8.4,6.25),0,1);
 const QUESTS=[
  {n:'Langkah Pertama',d:'Buktikan kebolehanmu. Tewaskan 5 makhluk di hutan.',t:'kill',need:5,rw:{gold:60,xp:40,Ramuan:1}},
@@ -750,7 +761,14 @@ function renderInv(){$('#invSub').textContent=`${CLASSES[CLS].name.toUpperCase()
   h+=`<div class="sec">KEMAJUAN CERITA</div>${QUESTS.map((x,i)=>`<div class="row2" style="opacity:${i<q.i?.55:i===q.i?1:.35}"><div class="ri">${i<q.i?'✅':i===q.i?'▶':'🔒'}</div><div><b>${i<=q.i?x.n:'???'}</b><span>${i<q.i?'Selesai':i===q.i?x.d:'Belum dibuka'}</span></div></div>`).join('')}`}
  $('#invBody').innerHTML=h;const pb=$('#invPot');if(pb)pb.addEventListener('click',()=>{drinkPotion();renderInv()})}
 // --- model NPC ---
-async function setupNPCs(){const L=new GLTFLoader();for(const n of NPCS){try{if(!(window.LHB_MODELS&&window.LHB_MODELS[n.model]))await loadJS('models/NPC.js');const b=window.LHB_MODELS&&window.LHB_MODELS[n.model];if(!b)throw Error('tiada model');
+function npcFree(x,z,self){if(Math.hypot(x-F0.x,z-F0.z)<4.6)return false;for(const o of NPCS)if(o!==self&&o.placed&&Math.hypot(x-o.x,z-o.z)<2.6)return false;
+ for(const d of DECOR_L){if(Math.abs(d.x-x)>14||Math.abs(d.z-z)>14)continue;const pr=PROPS&&PROPS[d.n],k=PSC*d.sc,dx=x-d.x,dz=z-d.z,c=Math.cos(d.rot),s=Math.sin(d.rot),lx=(dx*c-dz*s)/k,lz=(dx*s+dz*c)/k,mg=1.35/k;
+  if(pr&&pr.box){const b=pr.box;if(lx>b.min.x-mg&&lx<b.max.x+mg&&lz>b.min.z-mg&&lz<b.max.z+mg)return false}else if(Math.hypot(dx,dz)<2.4)return false}
+ return heightAt(x,z)>WL+.1}
+function placeNPCs(){for(const n of NPCS){const r0=Math.hypot(n.pos[0]-F0.x,n.pos[1]-F0.z),a0=Math.atan2(n.pos[1]-F0.z,n.pos[0]-F0.x);let best=null,bd=1e9;
+  for(let r=4.8;r<=11;r+=.35)for(let a=-1.4;a<=1.4;a+=.05){const x=F0.x+Math.cos(a0+a)*r,z=F0.z+Math.sin(a0+a)*r,d=Math.hypot(x-n.pos[0],z-n.pos[1]);if(d<bd&&npcFree(x,z,n)){bd=d;best=[x,z]}}
+  if(best){n.x=best[0];n.z=best[1]}n.y=heightAt(n.x,n.z);n.rot=Math.atan2(F0.x-n.x,F0.z-n.z);n.placed=true;addCol(n.x,n.z,.75)}}
+async function setupNPCs(){placeNPCs();const L=new GLTFLoader();for(const n of NPCS){try{if(!(window.LHB_MODELS&&window.LHB_MODELS[n.model]))await loadJS('models/NPC.js');const b=window.LHB_MODELS&&window.LHB_MODELS[n.model];if(!b)throw Error('tiada model');
   const g=await new Promise((r,j)=>L.parse(b64ToBuf(b),'',r,j));const m=g.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false;if(n.tint&&o.material&&/Peasant/.test(o.material.name)){o.material=o.material.clone();o.material.color.setHex(n.tint)}}});const bx=mBox(g,m);const sc=3.0/((bx.hi-bx.lo)||1);m.scale.setScalar(sc);m.position.set(n.x,n.y-bx.lo*sc,n.z);m.rotation.y=n.rot;scene.add(m);n.obj=m;
   n.mixer=new THREE.AnimationMixer(m);const clip=g.animations.find(c=>c.name===n.anim)||g.animations.find(c=>c.name==='Idle')||g.animations[0];if(clip){const a=n.mixer.clipAction(clip);a.play();a.time=Math.random()*2}}catch(e){console.warn('NPC',n.name,e);const grp=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.5,.6,2.2,10),new THREE.MeshStandardMaterial({color:n.id==='besi'?0x6a4a2a:n.id==='niaga'?0x7a3a8a:0x3a6a4a}));body.position.y=1.1;const head=new THREE.Mesh(new THREE.SphereGeometry(.42,12,10),new THREE.MeshStandardMaterial({color:0xd5a276}));head.position.y=2.55;grp.add(body,head);grp.position.set(n.x,n.y,n.z);scene.add(grp);n.obj=grp}
   const el=document.createElement('div');el.className='npcL';labels.appendChild(el);n.el=el}
@@ -976,7 +994,7 @@ function updateMob(m,dt,t){
  m.atkCd-=dt;const hp=hero.position,dx=hp.x-m.x,dz=hp.z-m.z,dist=Math.hypot(dx,dz),def=m.def;let vx=0,vz=0,spd=0;
  if(m.state==='wander'){m.timer-=dt;if(m.timer<=0){const a=Math.random()*6.28,r=Math.random()*14;m.tx=m.home.x+Math.sin(a)*r;m.tz=m.home.z+Math.cos(a)*r;m.timer=3+Math.random()*4}const ex=m.tx-m.x,ez=m.tz-m.z,ed=Math.hypot(ex,ez);if(ed>1){vx=ex/ed;vz=ez/ed;spd=def.spd*.3}
   if(!P.dead&&def.beh==='aggressive'&&dist<def.aggro*(1+m.lvl*.02))m.state='chase';if(def.beh==='passive'&&dist<5){m.state='flee';m.fleeT=3}}
- else if(m.state==='chase'){const hd=Math.hypot(m.x-m.home.x,m.z-m.home.z);if(P.dead||dist>(def.boss?60:38)||hd>(def.boss?55:75)||fireDist(hp.x,hp.z)<9)m.state='return';else if(def.boss&&bossAI(m,dt,dist,dx,dz)){}else{const reach=def.reach*def.scale+.6;if(dist>reach){vx=dx/dist;vz=dz/dist;spd=def.spd*(m.spdMul||1)}else{m.yaw=Math.atan2(dx,dz);if(m.atkCd<=0){m.atkCd=def.boss?1.6:1.3;if(m.mixer){{const op=m.AS.atk.filter(n=>m.acts[n]);if(op.length)mplay(m,op[(Math.random()*op.length)|0],true,1.35,.1)}m.alock=.65;const rr=reach+1.4;after(.3,()=>{if(!m.dead&&Math.hypot(hero.position.x-m.x,hero.position.z-m.z)<rr)hurtPlayer(m.dmg,m)})}else{m.lunge=.25;hurtPlayer(m.dmg,m)}}}}}
+ else if(m.state==='chase'){const hd=Math.hypot(m.x-m.home.x,m.z-m.home.z);if(P.dead||dist>(def.boss?60:38)||hd>(def.boss?55:75)||fireDist(hp.x,hp.z)<9)m.state='return';else if(def.boss&&bossAI(m,dt,dist,dx,dz)){}else{const reach=def.reach*def.scale+.6,canHit=def.boss||hero.position.y-heightAt(m.x,m.z)<.9+.7*def.scale;if(dist>reach){vx=dx/dist;vz=dz/dist;spd=def.spd*(m.spdMul||1);m.waitT=0}else if(!canHit){m.yaw=Math.atan2(dx,dz);m.waitT=(m.waitT||0)+dt;if(m.waitT>5){m.waitT=0;m.state='return'}}else{m.waitT=0;m.yaw=Math.atan2(dx,dz);if(m.atkCd<=0){m.atkCd=def.boss?1.6:1.3;if(m.mixer){{const op=m.AS.atk.filter(n=>m.acts[n]);if(op.length)mplay(m,op[(Math.random()*op.length)|0],true,1.35,.1)}m.alock=.65;const rr=reach+1.4;after(.3,()=>{if(!m.dead&&Math.hypot(hero.position.x-m.x,hero.position.z-m.z)<rr&&hero.position.y-heightAt(m.x,m.z)<1.1+.7*def.scale)hurtPlayer(m.dmg,m)})}else{m.lunge=.25;hurtPlayer(m.dmg,m)}}}}}
  else if(m.state==='flee'){m.fleeT-=dt;if(dist>0){vx=-dx/dist;vz=-dz/dist;spd=def.spd}if(m.fleeT<=0){m.state='wander';m.home={x:m.x,z:m.z}}}
  else if(m.state==='return'){const ex=m.home.x-m.x,ez=m.home.z-m.z,ed=Math.hypot(ex,ez);m.hp=Math.min(m.max,m.hp+m.max*.2*dt);if(ed<2)m.state='wander';else{vx=ex/ed;vz=ez/ed;spd=def.spd*.9}}
  if(spd>0){const nx=m.x+vx*spd*dt,nz=m.z+vz*spd*dt,nh=heightAt(nx,nz);const blocked=Math.abs(nx)>LIMIT||Math.abs(nz)>LIMIT||(nh-heightAt(m.x,m.z))/(spd*dt+1e-4)>1.25||(def.swim?nh<WL-1.8:nh<WL+.05)||fireDist(nx,nz)<8;if(!blocked){m.x=nx;m.z=nz;m.yaw=Math.atan2(vx,vz)}else m.timer=0;const p={x:m.x,z:m.z};pushOut(p,.45*def.scale);pushRocks(p,.45*def.scale);m.x=p.x;m.z=p.z;m.phase+=dt*spd*1.7}
