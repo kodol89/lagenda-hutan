@@ -50,7 +50,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 <div id="hurt"></div>
 <div id="top">
  <div class="col">
-  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 0.5</div></div>
+  <div class="panel"><div class="brand">LEGENDA HUTAN BELANTARA</div><div class="sub">OPEN WORLD RPG • PROTOTAIP 0.7</div></div>
   <a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a>
  </div>
  <div class="col r">
@@ -81,6 +81,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone as skClone} from 'three/addons/utils/SkeletonUtils.js';
+import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 const $=s=>document.querySelector(s);
 const isTouch=matchMedia('(hover:none),(pointer:coarse)').matches;
 
@@ -95,6 +96,7 @@ const C=CLASSES[CLS];
 // model dimuat melalui <script> (berfungsi juga bila fail dibuka terus tanpa server)
 const modelP=new Promise(res=>{const get=()=>window.LHB_MODELS&&window.LHB_MODELS[CLS]||null;if(get())return res(get());const sc=document.createElement('script');sc.src='models/'+CLS+'.js';sc.onload=()=>res(get());sc.onerror=()=>res(null);document.head.appendChild(sc);setTimeout(()=>res(null),30000)});
 const loadJS=src=>new Promise(res=>{const sc=document.createElement('script');sc.src=src;sc.onload=()=>res(true);sc.onerror=()=>res(false);document.head.appendChild(sc);setTimeout(()=>res(false),45000)});
+const skyP=loadJS('models/Sky.js'),natP=loadJS('models/Nature.js');
 const monP=Promise.all([loadJS('models/Monsters.js'),loadJS('models/Animals.js')]).then(r=>r.some(Boolean));
 await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,30)));
 
@@ -160,41 +162,76 @@ const host=$('#game');
 const scene=new THREE.Scene();const SKY=0x9cc3ab;scene.background=new THREE.Color(SKY);scene.fog=new THREE.FogExp2(SKY,.0068);
 const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,340);
 const renderer=new THREE.WebGLRenderer({antialias:!isTouch,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,isTouch?1.5:1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;host.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xdaf1ff,0x34442b,2.0));
+const hemi=new THREE.HemisphereLight(0xdaf1ff,0x34442b,2.0);scene.add(hemi);const SUN=new THREE.Vector3(-55,95,45).normalize();
 const sun=new THREE.DirectionalLight(0xffe0a6,2.5);sun.castShadow=true;const SM=isTouch?1024:2048;sun.shadow.mapSize.set(SM,SM);Object.assign(sun.shadow.camera,{left:-55,right:55,top:55,bottom:-55,near:1,far:260});sun.shadow.bias=-.0006;scene.add(sun,sun.target);
 const terrain=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95}));terrain.receiveShadow=true;scene.add(terrain);
 const water=new THREE.Mesh(new THREE.PlaneGeometry(WORLD,WORLD),new THREE.MeshStandardMaterial({color:0x3e6d73,transparent:true,opacity:.8,roughness:.2,metalness:.1}));water.rotation.x=-Math.PI/2;water.position.y=WL;scene.add(water);
 
 // ---- objek instanced (pokok, batu) dipecah ikut chunk supaya laju ----
 const CH=200,buckets=new Map(),dummy=new THREE.Object3D(),tmpC=new THREE.Color();
-function put(type,col){const ci=Math.floor((dummy.position.x+HALF)/CH),cj=Math.floor((dummy.position.z+HALF)/CH),key=type+'|'+ci+'|'+cj;dummy.updateMatrix();let b=buckets.get(key);if(!b)buckets.set(key,b={type,m:[],c:[]});b.m.push(...dummy.matrix.elements);b.c.push(col)}
+function put(type,col){const ci=Math.floor((dummy.position.x+HALF)/CH),cj=Math.floor((dummy.position.z+HALF)/CH),key=type+'|'+ci+'|'+cj;dummy.updateMatrix();let b=buckets.get(key);if(!b)buckets.set(key,b={type,m:[],c:[]});b.m.push(...dummy.matrix.elements);b.c.push(col);return[b,b.c.length-1]}
 const CG=10,colGrid=new Map();
 function addCol(x,z,r){const k=Math.floor(x/CG)*10007+Math.floor(z/CG);let L=colGrid.get(k);if(!L)colGrid.set(k,L=[]);L.push({x,z,r})}
 function pushOut(p,rad){const ci=Math.floor(p.x/CG),cj=Math.floor(p.z/CG);for(let i=ci-1;i<=ci+1;i++)for(let j=cj-1;j<=cj+1;j++){const L=colGrid.get(i*10007+j);if(!L)continue;for(const o of L){const dx=p.x-o.x,dz=p.z-o.z,d=Math.hypot(dx,dz),m=o.r+rad;if(d<m&&d>1e-4){p.x=o.x+dx/d*m;p.z=o.z+dz/d*m}}}}
 const CROWN=[[0x315e39,0x3b7041,0x477b45],[0x3d5a45],[0x6d8a3a,0x7a923f,0x83953f],[0x4a5e32,0x56693a],[0x1d3a24,0x24452a,0x2b4d2c]];
 const PINE=[0x2b4f35,0x335a3c,0x3d5a45];const ROCKC=[0x777b70,0x8a8a80,0x6a6c62,0x7f7a6e];
 const pickc=a=>a[(SR()*a.length)|0];
-function addTree(x,z,h,b){const big=b===4,s=big?1+SR()*1.1:.7+SR()*.8,tc=b===4?0x4a3424:b===2?0x7a5a3a:0x63452d;
- dummy.rotation.set(0,SR()*6.28,0);
- if(b===2){dummy.position.set(x,h-.2,z);dummy.scale.set(s*.8,s*.95,s*.8);put('trunk',tc);dummy.position.set(x,h+5.2*s*.95,z);dummy.scale.set(s*1.7,s*.42,s*1.7);put('crown',pickc(CROWN[2]))}
- else{dummy.position.set(x,h-.2,z);dummy.scale.set(s,s,s);put('trunk',tc);dummy.position.set(x,h+5.3*s,z);dummy.scale.setScalar(s);put('crown',pickc(CROWN[b]));dummy.position.set(x+.8*s,h+6.6*s,z+.4*s);dummy.scale.setScalar(s*.78);put('crown',pickc(CROWN[b]))}
- addCol(x,z,.75*s)}
-function addPine(x,z,h){const s=.8+SR()*.9;dummy.rotation.set(0,SR()*6.28,0);dummy.position.set(x,h-.1,z);dummy.scale.set(s*.7,s*.5,s*.7);put('trunk',0x5a3f2a);dummy.position.set(x,h+1.5*s,z);dummy.scale.setScalar(s);put('pine',pickc(PINE));addCol(x,z,.55*s)}
+// senarai pokok (untuk LOD: model sebenar dekat wira, bentuk ringkas di jauh)
+const TREES=[],TG=new Map(),TGS=50;function tAdd(t){const k=Math.floor(t.x/TGS)*10007+Math.floor(t.z/TGS);let L=TG.get(k);if(!L)TG.set(k,L=[]);L.push(t);TREES.push(t)}
+function addTree(x,z,h,b){const big=b===4,s=big?1+SR()*1.1:.7+SR()*.8,tc=b===4?0x4a3424:b===2?0x7a5a3a:0x63452d,rot=SR()*6.28,refs=[];
+ dummy.rotation.set(0,rot,0);
+ if(b===2){dummy.position.set(x,h-.2,z);dummy.scale.set(s*.8,s*.95,s*.8);refs.push(put('trunk',tc));dummy.position.set(x,h+5.2*s*.95,z);dummy.scale.set(s*1.7,s*.42,s*1.7);refs.push(put('crown',pickc(CROWN[2])))}
+ else{dummy.position.set(x,h-.2,z);dummy.scale.set(s,s,s);refs.push(put('trunk',tc));dummy.position.set(x,h+5.3*s,z);dummy.scale.setScalar(s);refs.push(put('crown',pickc(CROWN[b])));dummy.position.set(x+.8*s,h+6.6*s,z+.4*s);dummy.scale.setScalar(s*.78);refs.push(put('crown',pickc(CROWN[b])))}
+ addCol(x,z,.75*s);tAdd({x,z,h,s,rot,refs,kind:b===2?'sav':b===3?'swamp':'broad',id:TREES.length})}
+function addPine(x,z,h){const s=.8+SR()*.9,rot=SR()*6.28,refs=[];dummy.rotation.set(0,rot,0);dummy.position.set(x,h-.1,z);dummy.scale.set(s*.7,s*.5,s*.7);refs.push(put('trunk',0x5a3f2a));dummy.position.set(x,h+1.5*s,z);dummy.scale.setScalar(s);refs.push(put('pine',pickc(PINE)));addCol(x,z,.55*s);tAdd({x,z,h,s,rot,refs,kind:'pine',id:TREES.length})}
 for(let i=0;i<90000;i++){const x=(SR()-.5)*(WORLD-80),z=(SR()-.5)*(WORLD-80),w=weights(x,z),b=argmax(w);let pT=0,pP=0;for(let k=0;k<5;k++){pT+=w[k]*BIOMES[k].tree;pP+=w[k]*BIOMES[k].pine}const r=SR();if(r>pT+pP)continue;if(Math.hypot(x,z)<14||roadDist(x,z)<4.5||fireDist(x,z)<10)continue;const h=heightAt(x,z);if(h<WL-.35||(h<WL+.1&&b!==3)||h>27)continue;if(r<pT)addTree(x,z,h,b);else addPine(x,z,h)}
-for(let i=0;i<26000;i++){const x=(SR()-.5)*(WORLD-60),z=(SR()-.5)*(WORLD-60),w=weights(x,z),b=argmax(w);let p=0;for(let k=0;k<5;k++)p+=w[k]*BIOMES[k].rock;if(SR()>p)continue;if(Math.hypot(x,z)<10||roadDist(x,z)<3.5||fireDist(x,z)<6)continue;const h=heightAt(x,z);const s=b===1?.6+Math.pow(SR(),2)*3.6:.4+SR()*1.2;dummy.position.set(x,h+.12*s,z);dummy.rotation.set((SR()-.5)*.6,SR()*6.28,(SR()-.5)*.6);dummy.scale.set(s*(.8+SR()*.5),s*(.45+SR()*.35),s*(.8+SR()*.5));put('rock',b===3?0x5f6b4e:pickc(ROCKC));if(s>1.3)addCol(x,z,s*.8)}
-{const trunkG=new THREE.CylinderGeometry(.38,.65,5.5,7);trunkG.translate(0,2.75,0);const pineG=new THREE.ConeGeometry(2.3,6.5,7);pineG.translate(0,3.25,0);
- const G={trunk:trunkG,crown:new THREE.IcosahedronGeometry(2.7,0),pine:pineG,rock:new THREE.DodecahedronGeometry(1,0)};
- const MT={};for(const k in G)MT[k]=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,flatShading:true});
- const mm=new THREE.Matrix4();
- for(const b of buckets.values()){const n=b.c.length,im=new THREE.InstancedMesh(G[b.type],MT[b.type],n);for(let i=0;i<n;i++){mm.fromArray(b.m,i*16);im.setMatrixAt(i,mm);im.setColorAt(i,tmpC.setHex(b.c[i]))}im.computeBoundingSphere();im.castShadow=true;im.receiveShadow=b.type==='rock';scene.add(im)}
- buckets.clear()}
+for(let i=0;i<26000;i++){const x=(SR()-.5)*(WORLD-60),z=(SR()-.5)*(WORLD-60),w=weights(x,z),b=argmax(w);let p=0;for(let k=0;k<5;k++)p+=w[k]*BIOMES[k].rock;if(SR()>p)continue;if(Math.hypot(x,z)<10||roadDist(x,z)<3.5||fireDist(x,z)<6)continue;const h=heightAt(x,z);const s=b===1?.6+Math.pow(SR(),2)*3.6:.4+SR()*1.2;dummy.position.set(x,h+.12*s,z);dummy.rotation.set((SR()-.5)*.6,SR()*6.28,(SR()-.5)*.6);dummy.scale.set(s*(.8+SR()*.5),s*(.45+SR()*.35),s*(.8+SR()*.5));put('rock'+((SR()*3)|0),b===3?0x5f6b4e:pickc(ROCKC));if(s>1.3)addCol(x,z,s*.8)}
+// bina InstancedMesh (dipanggil selepas model alam dimuat; batu guna model sebenar jika ada)
+const mm4=new THREE.Matrix4(),ZERO4=new THREE.Matrix4().makeScale(0,0,0),WHITE=new THREE.Color(0xffffff);
+function buildInstances(){const trunkG=new THREE.CylinderGeometry(.38,.65,5.5,7);trunkG.translate(0,2.75,0);const pineG=new THREE.ConeGeometry(2.3,6.5,7);pineG.translate(0,3.25,0);const dod=new THREE.DodecahedronGeometry(1,0);
+ const flat=()=>new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,flatShading:true});const MT={trunk:flat(),crown:flat(),pine:flat()},G={trunk:trunkG,crown:new THREE.IcosahedronGeometry(2.7,0),pine:pineG};
+ for(let v=0;v<3;v++){const r=NAT&&NAT['Rock_Medium_'+(v+1)];G['rock'+v]=r?r.rockGeo:dod;MT['rock'+v]=r?r.parts[0].mat:MT.rock0||flat()}
+ for(const b of buckets.values()){const n=b.c.length,im=new THREE.InstancedMesh(G[b.type],MT[b.type],n);const tex=b.type.startsWith('rock')&&NAT;for(let i=0;i<n;i++){mm4.fromArray(b.m,i*16);im.setMatrixAt(i,mm4);tmpC.setHex(b.c[i]);if(tex)tmpC.lerp(WHITE,.55);im.setColorAt(i,tmpC)}b.m=new Float32Array(b.m);b.c=null;im.computeBoundingSphere();im.castShadow=true;im.receiveShadow=b.type.startsWith('rock');b.im=im;scene.add(im)}}
 
+// ---- alam semula jadi: Quaternius Stylized Nature MegaKit ----
+let NAT=null;
+async function setupNature(){if(!await natP||!window.LHB_MODELS||!window.LHB_MODELS.Nature){console.warn('Model alam tidak dimuat — guna bentuk ringkas');return}
+ try{const g=await new Promise((r,j)=>new GLTFLoader().parse(b64ToBuf(window.LHB_MODELS.Nature),'',r,j));delete window.LHB_MODELS.Nature;g.scene.updateMatrixWorld(true);NAT={};
+  for(const node of g.scene.children){const parts=[];node.traverse(o=>{if(o.isMesh){const geo=o.geometry.clone();geo.applyMatrix4(o.matrixWorld);const m=o.material;if(m.alphaTest>0||m.transparent){m.side=THREE.DoubleSide;m.transparent=false;m.alphaTest=Math.max(m.alphaTest,.5)}m.metalness=0;m.roughness=1;parts.push({geo,mat:m})}});NAT[node.name]={parts}}
+  for(let v=1;v<=3;v++){const r=NAT['Rock_Medium_'+v];if(!r)continue;const geo=r.parts[0].geo.clone();geo.computeBoundingBox();const bb=geo.boundingBox,c=bb.getCenter(new THREE.Vector3()),w=Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z);geo.translate(-c.x,-bb.min.y,-c.z);geo.scale(2/w,2/w,2/w);geo.translate(0,-.45,0);r.rockGeo=geo}}
+ catch(e){console.warn('Ralat model alam',e);NAT=null}}
+const TREE_VAR={broad:['CommonTree_3','CommonTree_4','CommonTree_5'],pine:['Pine_2','Pine_4','Pine_5'],swamp:['DeadTree_2','DeadTree_3','CommonTree_5'],sav:['TwistedTree_1','TwistedTree_3']};
+const TREE_SC={CommonTree_3:1.05,CommonTree_4:1.05,CommonTree_5:1.35,Pine_2:1.2,Pine_4:.9,Pine_5:1.05,DeadTree_2:.85,DeadTree_3:.75,TwistedTree_1:.42,TwistedTree_3:.45};
+const NEAR_N=isTouch?70:150,NEAR_R=isTouch?80:110;let nearIM=null,nearSet=new Set(),ntx=1e9,ntz=1e9;
+function makeIMs(name,cap,shadow){const d=NAT[name];if(!d)return null;return d.parts.map(p=>{const im=new THREE.InstancedMesh(p.geo,p.mat,cap);im.count=0;im.frustumCulled=false;im.castShadow=shadow;im.receiveShadow=true;im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(im);return im})}
+function hideFar(t,hide){for(const[b,i]of t.refs){if(!b.im)continue;if(hide)b.im.setMatrixAt(i,ZERO4);else{mm4.fromArray(b.m,i*16);b.im.setMatrixAt(i,mm4)}b.im.instanceMatrix.needsUpdate=true}}
+function updateNearTrees(force){if(!NAT)return;const hx=hero.position.x,hz=hero.position.z;if(!force&&Math.hypot(hx-ntx,hz-ntz)<8)return;ntx=hx;ntz=hz;
+ if(!nearIM){nearIM={};for(const k in TREE_VAR)for(const v of TREE_VAR[k])if(!nearIM[v])nearIM[v]=makeIMs(v,NEAR_N,true)}
+ const cand=[],c0=Math.floor(hx/TGS),r0=Math.floor(hz/TGS),n=Math.ceil(NEAR_R/TGS);for(let i=-n;i<=n;i++)for(let j=-n;j<=n;j++){const L=TG.get((c0+i)*10007+r0+j);if(!L)continue;for(const t of L){const d=Math.hypot(t.x-hx,t.z-hz);if(d<NEAR_R)cand.push([d,t])}}
+ cand.sort((a,b)=>a[0]-b[0]);const next=new Set();for(let i=0;i<Math.min(NEAR_N,cand.length);i++)next.add(cand[i][1]);
+ for(const t of nearSet)if(!next.has(t))hideFar(t,false);for(const t of next)if(!nearSet.has(t))hideFar(t,true);nearSet=next;
+ const cnt={};for(const v in nearIM)cnt[v]=0;
+ for(const t of next){const L=TREE_VAR[t.kind],v=L[(hash(t.id,7)*L.length)|0],ims=nearIM[v];if(!ims){hideFar(t,false);continue}dummy.position.set(t.x,t.h-.25,t.z);dummy.rotation.set(0,t.rot,0);dummy.scale.setScalar(t.s*TREE_SC[v]);dummy.updateMatrix();const k=cnt[v]++;for(const im of ims)im.setMatrixAt(k,dummy.matrix)}
+ for(const v in nearIM){const ims=nearIM[v];if(!ims)continue;for(const im of ims){im.count=cnt[v];im.instanceMatrix.needsUpdate=true}}}
+// penutup tanah: rumput, semak, bunga, paku-pakis, cendawan
+const COVER=[['Grass_Common_Short',.75,[.85,.3,.5,.45,.3]],['Grass_Common_Tall',.7,[.2,.05,.9,.45,.25]],['Grass_Wispy_Short',.85,[.3,.25,.5,.2,.15]],['Clover_2',.7,[.12,0,0,.08,.2]]];
+const DECOR=[['Bush_Common',1.6,[.14,.03,.06,.12,.2]],['Bush_Common_Flowers',1.6,[.08,0,.03,0,0]],['Fern_1',.45,[.06,0,0,.16,.25]],['Flower_3_Group',.55,[.1,0,.08,0,0]],['Flower_4_Group',.5,[.06,0,.06,0,.02]],['Mushroom_Common',1.7,[.03,0,0,.05,.14]],['Plant_1_Big',.5,[.04,0,.02,.1,.1]]];
+const CTINT=[0xffffff,0xd0d0c0,0xf2d890,0xc0cca8,0xa8c098].map(h=>new THREE.Color(h));
+const COVER_MAX=isTouch?700:1600,COVER_R=isTouch?30:42,DECOR_MAX=isTouch?140:320,DECOR_R=isTouch?45:65;let coverIM=null,ccx=1e9,ccz=1e9;
+function scatter(list,cell,rad,cap,cnt,salt,hx,hz){const n=Math.ceil(rad/cell),c0=Math.floor(hx/cell),r0=Math.floor(hz/cell);let tot=0;
+ for(let i=-n;i<=n&&tot<cap;i++)for(let j=-n;j<=n&&tot<cap;j++){if(i*i+j*j>n*n)continue;const ci=c0+i,cj=r0+j,x=(ci+hash(ci+salt,cj))*cell,z=(cj+hash(ci,cj-salt))*cell,b=biomeOf(x,z);let r=hash(ci-5+salt,cj+9),pick=null;
+  for(const e of list){r-=e[2][b]/list.length*(list===COVER?1.6:2.5);if(r<0){pick=e;break}}if(!pick)continue;const ims=coverIM[pick[0]];if(!ims)continue;const h=heightAt(x,z);if(h<WL+.05||h>24||roadDist(x,z)<2.6||fireDist(x,z)<3)continue;
+  const sc=pick[1]*(.75+hash(ci+3,cj+3+salt)*.6);dummy.position.set(x,h-.05,z);dummy.rotation.set(0,hash(ci,cj+5+salt)*6.28,0);dummy.scale.setScalar(sc);dummy.updateMatrix();const k=cnt[pick[0]]++;if(k>=cap){cnt[pick[0]]--;continue}for(const im of ims){im.setMatrixAt(k,dummy.matrix);if(list===COVER)im.setColorAt(k,CTINT[b])}tot++}}
+function updateCover(force){const hx=hero.position.x,hz=hero.position.z;if(!force&&Math.hypot(hx-ccx,hz-ccz)<8)return;ccx=hx;ccz=hz;
+ if(!coverIM){coverIM={};for(const[e]of COVER)coverIM[e]=makeIMs(e,COVER_MAX,false);for(const[e]of DECOR)coverIM[e]=makeIMs(e,DECOR_MAX,true)}
+ const cnt={};for(const k in coverIM)cnt[k]=0;scatter(COVER,1.6,COVER_R,COVER_MAX,cnt,0,hx,hz);scatter(DECOR,5,DECOR_R,DECOR_MAX,cnt,41,hx,hz);
+ for(const k in coverIM){const ims=coverIM[k];if(!ims)continue;for(const im of ims){im.count=cnt[k];im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true}}}
 // ---- rumput sekitar wira (dijana semula bila bergerak) ----
 const GRASS_MAX=2600,grassGeo=new THREE.ConeGeometry(.13,1,4);grassGeo.translate(0,.5,0);
 const grass=new THREE.InstancedMesh(grassGeo,new THREE.MeshStandardMaterial({color:0xffffff,roughness:1}),GRASS_MAX);grass.frustumCulled=false;grass.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(grass);
 const GC=[[0x77904b,0x8b9b56,0x526f3d],[0x7d8a5e,0x6f7c55],[0xb3a865,0xc2b56c,0x9a9a52],[0x52683a,0x5f7a3e],[0x3f5d33,0x4a6a38]].map(a=>a.map(h=>new THREE.Color(h)));
 const GD=[.85,.28,1,.55,.5];let gcx=1e9,gcz=1e9;
-function updateGrass(force){const hx=hero.position.x,hz=hero.position.z;if(!force&&Math.hypot(hx-gcx,hz-gcz)<10)return;gcx=hx;gcz=hz;const S=1.7,n=Math.ceil(44/S),c0=Math.floor(hx/S),r0=Math.floor(hz/S);let k=0;
+function updateGrass(force){if(NAT){grass.visible=false;updateCover(force);updateNearTrees(force);return}const hx=hero.position.x,hz=hero.position.z;if(!force&&Math.hypot(hx-gcx,hz-gcz)<10)return;gcx=hx;gcz=hz;const S=1.7,n=Math.ceil(44/S),c0=Math.floor(hx/S),r0=Math.floor(hz/S);let k=0;
  outer:for(let i=-n;i<=n;i++)for(let j=-n;j<=n;j++){if(i*i+j*j>n*n)continue;const ci=c0+i,cj=r0+j,x=(ci+hash(ci,cj))*S,z=(cj+hash(ci+71,cj-33))*S,b=biomeOf(x,z);if(hash(ci-5,cj+9)>GD[b])continue;const h=heightAt(x,z);if(h<WL+.05||h>24||roadDist(x,z)<2.6||fireDist(x,z)<3)continue;const s=(.35+hash(ci+3,cj+3)*.75)*(b===2?1.6:1);dummy.position.set(x,h-.05,z);dummy.rotation.set((hash(ci,cj+5)-.5)*.5,0,(hash(ci+8,cj)-.5)*.5);dummy.scale.set(1,s,1);dummy.updateMatrix();grass.setMatrixAt(k,dummy.matrix);const pal=GC[b];grass.setColorAt(k,pal[(hash(ci+1,cj+2)*pal.length)|0]);if(++k>=GRASS_MAX)break outer}
  grass.count=k;grass.instanceMatrix.needsUpdate=true;if(grass.instanceColor)grass.instanceColor.needsUpdate=true}
 
@@ -229,6 +266,16 @@ const MONT={};
 const ANIMSET={monster:{idle:'Idle',walk:'Walk',run:'Run',atk:['Punch','Weapon'],hit:'HitReact',death:'Death'},animal:{idle:'Idle',walk:'Walk',run:'Gallop',atk:['Attack','Attack_Headbutt','Attack_Kick'],hit:'Idle_HitReact1',death:'Death'}};
 async function setupMonsters(){if(!await monP){console.warn('Model monster tidak dimuat — guna model asas');return}const L=new GLTFLoader();
  for(const n of['Bunny','Frog','Cactoro','Orc','Yeti','Demon','Wolf','Deer','Bull','Stag','Fox']){const b=window.LHB_MODELS&&window.LHB_MODELS[n];if(!b)continue;try{const g=await new Promise((r,j)=>L.parse(b64ToBuf(b),'',r,j));const sc=g.scene;sc.updateMatrixWorld(true);const box=new THREE.Box3();sc.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(sc);MONT[n]={scene:sc,clips:Object.fromEntries(g.animations.map(c=>[c.name,c])),h:(box.max.y-box.min.y)||1,y0:box.min.y};delete window.LHB_MODELS[n]}catch(e){console.warn('Ralat monster',n,e)}}}
+// ---- langit HDRI (Poly Haven) ----
+async function setupSky(){if(!await skyP||!window.LHB_MODELS||!window.LHB_MODELS.Sky){console.warn('Langit HDRI tidak dimuat');return}
+ try{const td=new RGBELoader().parse(b64ToBuf(window.LHB_MODELS.Sky));delete window.LHB_MODELS.Sky;const W=td.width,Hh=td.height,d=td.data;
+  const tex=new THREE.DataTexture(d,W,Hh,THREE.RGBAFormat,td.type);tex.mapping=THREE.EquirectangularReflectionMapping;tex.colorSpace=THREE.LinearSRGBColorSpace;tex.flipY=true;tex.minFilter=tex.magFilter=THREE.LinearFilter;tex.generateMipmaps=false;tex.needsUpdate=true;
+  const get=td.type===THREE.HalfFloatType?i=>THREE.DataUtils.fromHalfFloat(d[i]):i=>d[i];
+  const avg=(y0,y1)=>{let r=0,g=0,b=0,n=0;for(let y=Math.floor(Hh*y0);y<Math.floor(Hh*y1);y+=2)for(let x=0;x<W;x+=8){const i=(y*W+x)*4;r+=Math.min(4,get(i));g+=Math.min(4,get(i+1));b+=Math.min(4,get(i+2));n++}return[r/n,g/n,b/n]};
+  const hz=avg(.44,.5),zn=avg(0,.15);scene.background=tex;scene.fog.color.setRGB(...hz);const mz=Math.max(...zn);hemi.color.setRGB(zn[0]/mz,zn[1]/mz,zn[2]/mz);
+  let best=-1,bx=0,by=0;for(let y=0;y<Hh/2;y++)for(let x=0;x<W;x++){const i=(y*W+x)*4,l=.2126*get(i)+.7152*get(i+1)+.0722*get(i+2);if(l>best){best=l;bx=x;by=y}}
+  const lon=((bx+.5)/W-.5)*Math.PI*2,lat=clamp((.5-(by+.5)/Hh)*Math.PI,.55,1.3);SUN.set(Math.cos(lat)*Math.cos(lon),Math.sin(lat),Math.cos(lat)*Math.sin(lon)).normalize()}
+ catch(e){console.warn('Ralat langit',e)}}
 // ---- projektil & kesan ----
 const projs=[],booms=[],later=[];const after=(t,fn)=>later.push({t,fn});
 const arrowG=new THREE.CylinderGeometry(.045,.045,1.3,5);arrowG.rotateX(Math.PI/2);const tipG=new THREE.ConeGeometry(.1,.28,5);tipG.rotateX(Math.PI/2);tipG.translate(0,0,.78);const arrowM=mat(0x8a6a3a),tipM=mat(0xb9c7c4,.35);
@@ -368,7 +415,7 @@ function drawBig(){const c=$('#bigc'),x=c.getContext('2d'),W=c.width,tb=(a,b)=>[
 
 // ================= GELUNG UTAMA =================
 const clock=new THREE.Clock();let slowT=0,miniT=0,saveT=0,spawnT=0,nearFire=null;
-$('#loading').firstChild.textContent='MEMUATKAN WIRA…';await setupModel();$('#loading').firstChild.textContent='MEMUATKAN RAKSASA…';await setupMonsters();
+$('#loading').firstChild.textContent='MEMUATKAN WIRA…';await setupModel();$('#loading').firstChild.textContent='MEMUATKAN RAKSASA…';await setupMonsters();await setupSky();$('#loading').firstChild.textContent='MEMUATKAN ALAM…';await setupNature();buildInstances();
 hud();hpHud();updateGrass(true);for(let i=0;i<14;i++)spawnMob(true);let heroMoving=false;
 $('#loading').remove();toast(P.kills?'SELAMAT KEMBALI, WIRA':'SELAMAT DATANG, WIRA');
 if(FIRES[0].found)hint('Buru haiwan & raksasa untuk XP — makin jauh dari pusat, makin kuat musuhnya');
@@ -411,7 +458,7 @@ function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDel
  trail.position.set(hero.position.x,hero.position.y+1.3,hero.position.z);trail.rotation.z=hero.rotation.y-Math.PI/2;trail.material.opacity=C.kind==='melee'?Math.max(0,trail.material.opacity-dt*2.6):0;
  // kamera
  const s=Math.sin(camYaw),c=Math.cos(camYaw);tgt.set(hero.position.x,hero.position.y+2.1,hero.position.z);camPos.set(tgt.x+s*camDist,tgt.y+camDist*.61,tgt.z+c*camDist);const ch=heightAt(camPos.x,camPos.z)+1.4;if(camPos.y<ch)camPos.y=ch;camera.position.lerp(camPos,.09);camera.lookAt(tgt.x-s*1.5,tgt.y+.25,tgt.z-c*1.5);
- sun.position.set(hero.position.x-55,hero.position.y+95,hero.position.z+45);sun.target.position.copy(hero.position);
+ sun.position.set(hero.position.x+SUN.x*115,hero.position.y+SUN.y*115,hero.position.z+SUN.z*115);sun.target.position.copy(hero.position);
  dustPts.position.set(hero.position.x,hero.position.y,hero.position.z);dustPts.rotation.y=t*.012;
  // mob
  for(let i=mobs.length-1;i>=0;i--)updateMob(mobs[i],dt,t);

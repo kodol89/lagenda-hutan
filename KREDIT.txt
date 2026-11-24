@@ -4,3 +4,7 @@ Model haiwan (Wolf, Deer, Bull, Stag, Fox): "Ultimate Animated Animals" oleh Qua
 https://quaternius.com
 
 Fail models/*.js ialah model GLB yang dibungkus dalam JavaScript supaya game boleh dibuka terus tanpa server.
+
+Langit HDRI: "Kloofendal 48d Partly Cloudy (Pure Sky)" dari Poly Haven - CC0 1.0
+https://polyhaven.com
+Pokok, batu, rumput, semak, bunga: "Stylized Nature MegaKit" oleh Quaternius - CC0 1.0
