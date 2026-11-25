@@ -22,3 +22,9 @@ Ikon UI (v1.8): M-Xing Studio — Dark Fantasy icon packs (Vol.01, 03, 04, 05, 0
 Prop kem, tumbuhan hutan & bunyi ambien (v1.9): Enchanted Wilds — Blaine Ritz / Winged Relay Asset Studio (ritzman99.itch.io). Lesen penggunaan dalam game; kredit dihargai.
 
 Ikon senjata (v2.0.2): "Weapon Set #1" oleh TrulyMalicious — CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
+Kesan visual skill (v2.3):
+ - "Brackeys VFX Bundle" (Brackeys; tekstur oleh Picster, Kenney, Thomas Iché [flipbook], CodeManu [predrawn]) - CC0 1.0
+ - "Particle Pack" oleh Kenney (kenney.nl) - CC0 1.0
+ - "Sparkling Fireball" (OpenGameArt) - CC0 1.0
+ - "PVFX Foundry" sprite sheets (status, sihir, ais, petir, hentakan, naik tahap) - CC0 1.0
