@@ -248,7 +248,7 @@ const CLASSES={
  Ranger:{name:'Pemanah',hp:.9,atk:.95,cd:.7,kind:'arrow',range:34,spd:48,idle:'Idle',run:'Run',walk:'Walk',atkAnims:['Bow_Shoot'],atkTs:1.0,hitDelay:.3},
  Wizard:{name:'Ahli Sihir',hp:.85,atk:.85,cd:.85,kind:'orb',range:26,spd:28,aoe:4,idle:'Idle_Weapon',run:'Run_Weapon',walk:'Walk',atkAnims:['Spell1','Staff_Attack'],atkTs:1.5,hitDelay:.4}};
 let CLS=null;try{CLS=localStorage.getItem('lhb_class')}catch(e){}
-if(!CLASSES[CLS]||location.search.includes('pilih')){CLS=await runPick(CLASSES[CLS]?CLS:'Warrior');try{localStorage.setItem('lhb_class',CLS)}catch(e){}if(location.search)history.replaceState(null,'',location.pathname)}
+if(!CLASSES[CLS]||location.search.includes('pilih')){let ext=false;try{const r=await fetch('pilih-wira.html',{method:'HEAD',cache:'no-store'});ext=r.ok}catch(e){}if(ext){location.replace('pilih-wira.html');await new Promise(()=>{})}CLS=await runPick(CLASSES[CLS]?CLS:'Warrior');try{localStorage.setItem('lhb_class',CLS)}catch(e){}if(location.search)history.replaceState(null,'',location.pathname)}
 // ================= SKRIN PILIH WIRA (pentas 3D) =================
 async function runPick(start){
  const K=['Warrior','Ranger','Wizard'],COL=[0xffb347,0x6dff9a,0xb38cff],CSS=['#ffb347','#6dff9a','#b38cff'];
