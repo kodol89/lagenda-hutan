@@ -1044,13 +1044,17 @@ const MTIER=[0x9a7a58,0xd0905a,0xa8aeb8,0xc8d0dc,0xf0f4fc,0xa8e8ff],RTINT=[0xfff
 function lookOf(eq){const on={B_body:null,B_beard:null,B_hair:null};let hair=true;
  for(const[sl]of SLOTS){const it=eq[sl];if(it){const v=vOf(it);if(!v)continue;for(const g of v.m)on[g]=it;if(v.hair===0)hair=false}else if(VDEF[sl])on[VDEF[sl]]=null}
  if('W_bow' in on)on.W_bowback=on.W_bow; if(!hair)delete on.B_hair;return on}
+// nama kumpulan kit: three.js boleh menamakan semula nod (cth 'B_body_1') — semak juga userData.name
+function kname(o){if(!o)return null;for(const n of[o.name,o.userData&&o.userData.name]){if(!n)continue;if(KITG.has(n))return n;const b=n.replace(/_\d+$/,'');if(KITG.has(b))return b}return null}
+function kitHas(root){let k=false;root.traverse(o=>{if(!k&&kname(o)==='B_body')k=true});return k}
+function kfind(root,name){let r=null;root.traverse(o=>{if(!r&&o.isSkinnedMesh&&!(o.userData&&o.userData.lhbArmorOverlay)&&(kname(o)===name||(kname(o)==null&&kname(o.parent)===name)))r=o});return r}
 function applyLook(root,eq){
- if(!root||!root.getObjectByName('B_body'))return false;
+ if(!root||!kitHas(root))return false;
  const on=lookOf(eq),glows=[];
  root.traverse(o=>{
   if(!o.isMesh)return;
   let g=o,gn=null;
-  while(g&&!(gn=KITG.has(g.name)?g.name:(g.userData&&KITG.has(g.userData.name)?g.userData.name:null)))g=g.parent;
+  while(g&&!(gn=kname(g)))g=g.parent;
   if(!gn)return;
   const vis=gn in on;o.visible=vis;if(!vis)return;
   const it=on[gn];
@@ -1093,7 +1097,7 @@ function buildArmorOverlays(root,eq){
  for(const plan of plans){
   const it=eq&&eq[plan.slot];if(!it||it.v!==plan.variant)continue;
   for(const name of plan.names){
-   const src=root.getObjectByName(name);if(!src||!src.isSkinnedMesh||!src.parent)continue;
+   const src=kfind(root,name);if(!src||!src.isSkinnedMesh||!src.parent)continue;
    const shell=src.clone(false);shell.geometry=src.geometry.clone();
    const pos=shell.geometry.attributes.position;
    const nrm=shell.geometry.attributes.normal;if(pos&&nrm){const off=(plan.scale-1)*.16;for(let i=0;i<pos.count;i++)pos.setXYZ(i,pos.getX(i)+nrm.getX(i)*off,pos.getY(i)+nrm.getY(i)*off,pos.getZ(i)+nrm.getZ(i)*off);pos.needsUpdate=true;shell.geometry.computeBoundingSphere()}
@@ -1129,8 +1133,8 @@ function smithAct(a){const[k,sl]=a.split('_'),it=P.eq[sl];if(!it)return;const hp
  else{if((it.u||0)<10||it.r>=5)return;const c=ascCost(it);if(!canPay(c))return;pay(c);ascend(it);const col=parseInt(RAR[it.r].c.slice(1),16);pillarFx(hp.x,hp.y,hp.z,2,12,col,1.4);toast(`✨ ${RAR[it.r].n.toUpperCase()}!\n${it.n}`,2600)}
  sfx('break');sfx('level',.6);flash(hp.x,hp.y+2,hp.z,0xffa040,6);emit(hp.x,hp.y+1.5,hp.z,{n:30,col:0xffe080,col2:0xff5000,spd:4,up:1,life:.7,size:.5});refreshStats()}
 function gearXtra(sel){return`${(sel.u||sel.e)?`<div class="dlore">⚒ Naik taraf +${sel.u||0}/10${sel.e?` • 🔮 Jampi +${sel.e}`:''}</div>`:''}${sel.r>=4?`<div class="dlore" style="color:${RAR[sel.r].c}">✦ Kesan ${RAR[sel.r].n}: kerosakan +2% & aura bercahaya</div>`:''}${sel.r===5?`<div class="dlore" style="color:#ff8090">SET NAGA BELANTARA (${P.setN||0}/10 dipakai)<br>2: Serangan +10% • 4: Nyawa +15%<br>6: Kritikal +10%, Kuasa Kritikal +20% • 8: Kerosakan +20% & aura api</div>`:''}`}
-function kitPreset(m,k){if(!m.getObjectByName('B_body'))return;const S=new Set({Warrior:['B_body','B_beard','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_helm','S_pauldron','K_cape','W_sword','O_shield'],Ranger:['B_body','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_hood','S_pauldron','W_bow','O_dagger'],Wizard:['B_body','B_beard','C_peasant','G_peasant','L_peasant','F_peasant','H_hood','W_staff','K_cape','X_amulet']}[k]||[]);
- m.traverse(o=>{if(!o.isMesh)return;let g=o,gn=null;const re=/^[A-Z]_[a-z]+$/;while(g&&!(gn=re.test(g.name||'')?g.name:(g.userData&&re.test(g.userData.name||'')?g.userData.name:null)))g=g.parent;if(gn)o.visible=S.has(gn)})}
+function kitPreset(m,k){const KN=o=>{for(const n of[o&&o.name,o&&o.userData&&o.userData.name]){const q=n&&/^([A-Z]_[a-z]+)(_\d+)?$/.exec(n);if(q)return q[1]}return null};let kit=false;m.traverse(o=>{if(KN(o)==='B_body')kit=true});if(!kit)return;const S=new Set({Warrior:['B_body','B_beard','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_helm','S_pauldron','K_cape','W_sword','O_shield'],Ranger:['B_body','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_hood','S_pauldron','W_bow','O_dagger'],Wizard:['B_body','B_beard','C_peasant','G_peasant','L_peasant','F_peasant','H_hood','W_staff','K_cape','X_amulet']}[k]||[]);
+ m.traverse(o=>{if(!o.isMesh)return;let g=o,gn=null;while(g&&!(gn=KN(g)))g=g.parent;if(gn)o.visible=S.has(gn)})}
 let invSel=null;
 const ICONS={sword:'<path d="M50 6 58 6 58 14 26 46 18 38Z" fill="currentColor"/><path d="M14 36 28 50 24 54 10 40Z M18 46 8 56 12 60 22 50" fill="currentColor" opacity=".8"/>',bow:'<path d="M14 6C46 14 54 30 54 50" stroke="currentColor" stroke-width="5" fill="none"/><path d="M14 6 54 50" stroke="currentColor" stroke-width="1.6"/><path d="M8 58 44 22M44 22l2 9M44 22l-9-2" stroke="currentColor" stroke-width="3" fill="none"/>',staff:'<path d="M18 58 44 22" stroke="currentColor" stroke-width="5"/><circle cx="48" cy="16" r="9" fill="currentColor"/><circle cx="48" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/>',
  shield:'<path d="M32 4 54 12V30C54 44 44 54 32 60 20 54 10 44 10 30V12Z" fill="currentColor"/><path d="M32 14V50M18 28H46" stroke="#0009" stroke-width="4"/>',quiver:'<rect x="20" y="22" width="18" height="36" rx="5" fill="currentColor" transform="rotate(-14 29 40)"/><path d="M22 22 30 4M30 22 40 6M38 24 48 10" stroke="currentColor" stroke-width="3"/><path d="M28 6l4-4 1 6M38 8l5-3v6M46 12l5-2-1 6" fill="currentColor"/>',tome:'<rect x="12" y="8" width="40" height="48" rx="4" fill="currentColor"/><rect x="16" y="12" width="32" height="40" rx="2" fill="#0006"/><path d="M32 18l4 9 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1Z" fill="currentColor"/>',
