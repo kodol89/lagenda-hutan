@@ -30,7 +30,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
 .bmtop{display:flex;align-items:center;width:100%;gap:8px}.bmtop b{font:900 18px Cinzel,Georgia,serif;letter-spacing:3px;color:#ffd28a;flex:1;text-align:center}.bmtop button{width:34px;height:34px;border:1px solid #8a6a2a;background:#120c07;color:#e8c070;border-radius:4px;cursor:pointer;font-size:16px}
 #bigc{cursor:crosshair}.bmbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}.bmbtns button{padding:8px 12px;border:1px solid #8a6a2a;border-radius:4px;background:linear-gradient(180deg,#24180d,#0c0805);color:#ffe0a0;font:900 11px Cinzel,Georgia,serif;letter-spacing:1px;cursor:pointer}.bmbtns button:hover{border-color:#ff8a2a;box-shadow:0 0 12px -2px #ff6a1a}.bmbtns button.stop{color:#ff9a8a}
 .bmtip{font-size:11px;color:#bfa27a}
-#back,#swap,#musB,#fsB,#sfxB,#invB,#menuT,#mapB{pointer-events:auto;cursor:pointer;align-self:flex-start;color:#f9dfa0;text-decoration:none;font-size:10px;background:#07150fbb;padding:6px 10px;border:1px solid #d9b56855;border-radius:20px}
+#back,#swap,#netB,#musB,#fsB,#sfxB,#invB,#menuT,#mapB{pointer-events:auto;cursor:pointer;align-self:flex-start;color:#f9dfa0;text-decoration:none;font-size:10px;background:#07150fbb;padding:6px 10px;border:1px solid #d9b56855;border-radius:20px}
 #hint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);font-size:11px;color:#f7edcf;background:#07150fc9;padding:7px 13px;border:1px solid #d9b56855;border-radius:30px;max-width:min(560px,70vw);text-align:center;pointer-events:none;transition:opacity .4s}
 #help{position:fixed;left:14px;bottom:14px;font-size:10px;line-height:1.6;color:#d4dfca;background:#07150fc9;padding:8px 11px;border-radius:10px;border:1px solid #ffffff22;pointer-events:none}
 #stick{position:fixed;left:22px;bottom:26px;width:120px;height:120px;border-radius:50%;background:#d9e8d322;border:1px solid #ffffff55;touch-action:none;box-shadow:inset 0 0 24px #0005}
@@ -175,7 +175,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
  <div class="col">
   <div id="mapWrap"><canvas id="mini" width="256" height="256" title="Ketik untuk peta penuh"></canvas><div id="wpInfo" hidden></div></div>
   <div class="mrow"><a id="menuT">☰ MENU</a><a id="invB">🎒 BEG</a><a id="mapB">🗺 PETA</a></div>
-  <div id="menuL" class="closed"><a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="netB">👥 MAIN BERSAMA</a><a id="musB" class="musB">🔊 MUZIK</a><a id="sfxB">🔔 BUNYI</a><a id="fsB">⛶ SKRIN PENUH</a><div class="sub" id="ver">LEGENDA HUTAN • UPDATE 3.1</div></div>
+  <div id="menuL" class="closed"><a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="netB">👥 MAIN BERSAMA</a><a id="musB" class="musB">🔊 MUZIK</a><a id="sfxB">🔔 BUNYI</a><a id="fsB">⛶ SKRIN PENUH</a><div class="sub" id="ver">LEGENDA HUTAN • UPDATE 3.2</div></div>
  </div>
  <div class="col r">
   <div class="panel stats">
@@ -1535,28 +1535,58 @@ function buildEntrance(){const E=DUNE,f=FIRES[1],yaw=Math.atan2(f.x-E.x,f.z-E.z)
  DUNE.h=y;DUNE.el=mkLabel('dn')}
 // ================= GUA KELAM (dungeon di luar peta) =================
 const DNAME=['BIASA','SUKAR','NERAKA'],DUNBG=new THREE.Color(0x040306);
-const DUN={x:DUNX0+420,z:0,diff:0,lv:1,gate:0,started:[0,0,0],cleared:[0,0,0],wave:[[],[],[]],t:0,built:false,portals:[],g:null,gates:[],torches:[],tfx:[],won:false,bg:null,winP:null};
+const DUN={x:DUNX0+420,z:0,diff:0,lv:1,gate:0,started:[0,0,0],cleared:[0,0,0],wave:[[],[],[]],t:0,built:false,portals:[],g:null,gates:[],torches:[],tfx:[],lpts:[],won:false,bg:null,winP:null};
 const DR=[[-9,9,-9,9],[-3.2,3.2,-33,-6],[-14,14,-58,-30],[-3.2,3.2,-81,-55],[-16,16,-108,-78],[-3.2,3.2,-131,-105],[-20,20,-170,-128]],DROOM=[2,4,6];
 function dunOpen(){return DUN.gate===0?3:DUN.gate===1?5:7}
 function dunClamp(p,r){const n=dunOpen();let bx=0,bz=0,bd=1e9;for(let i=0;i<n;i++){const R=DR[i],x0=DUN.x+R[0]+r,x1=DUN.x+R[1]-r,z0=DUN.z+R[2]+r,z1=DUN.z+R[3]-r,cx=clamp(p.x,x0,x1),cz=clamp(p.z,z0,z1),d=(cx-p.x)**2+(cz-p.z)**2;if(d===0)return;if(d<bd){bd=d;bx=cx;bz=cz}}p.x=bx;p.z=bz}
+function dunCam(c){const m=.7;let bx=c.x,bz=c.z,bd=1e9;for(const R of DR){const x0=DUN.x+R[0]+m,x1=DUN.x+R[1]-m,z0=DUN.z+R[2]+m,z1=DUN.z+R[3]-m,cx=clamp(c.x,x0,x1),cz=clamp(c.z,z0,z1),d=(cx-c.x)**2+(cz-c.z)**2;if(d===0)return;if(d<bd){bd=d;bx=cx;bz=cz}}c.x=bx;c.z=bz}
+function dunLights(t){if(!DUN.lp)return;const h=hero.position;DUN.lt=(DUN.lt||0)-1;if(DUN.lt<=0){DUN.lt=15;DUN.near=DUN.lpts.map(p=>[p,(p[0]-h.x)**2+(p[2]-h.z)**2]).sort((a,b)=>a[1]-b[1]).slice(0,DUN.lp.length).map(a=>a[0])}
+ DUN.lp.forEach((L,i)=>{const p=DUN.near&&DUN.near[i];if(!p){L.intensity=0;return}L.position.set(p[0],p[1],p[2]);L.intensity=(19+4*Math.sin(t*9.1+i*1.7)+2*Math.sin(t*23+i))})}
+
 function buildDun(){if(DUN.built)return;DUN.built=true;const G=new THREE.Group();DUN.g=G;scene.add(G);const X=DUN.x,Z=DUN.z,Y=DUNY;
  const ft=stoneTex();ft.repeat.set(60/8,200/8);const fl=new THREE.Mesh(new THREE.PlaneGeometry(60,200),new THREE.MeshStandardMaterial({map:ft,roughness:.95,color:0x8a8494}));fl.rotation.x=-Math.PI/2;fl.position.set(X,Y,Z-80);fl.receiveShadow=true;G.add(fl);
- const inAny=(x,z,m)=>DR.some(Q=>x>Q[0]-m&&x<Q[1]+m&&z>Q[2]-m&&z<Q[3]+m),pts=[],rr=rng(991);
- for(const R of DR){const[x0,x1,z0,z1]=R;for(const[ax,az,bx2,bz,nx,nz]of[[x0,z0,x1,z0,0,-1],[x0,z1,x1,z1,0,1],[x0,z0,x0,z1,-1,0],[x1,z0,x1,z1,1,0]]){const L=Math.hypot(bx2-ax,bz-az),n=Math.max(1,Math.round(L/2.3));
-  for(let i=0;i<=n;i++){const t=i/n;for(const[off,sc]of[[1.5,1],[3.8,1.35]]){const x=ax+(bx2-ax)*t+nx*off,z=az+(bz-az)*t+nz*off;if(inAny(x,z,.7))continue;pts.push([x,z,sc])}}}}
+ const inAny=(x,z,m,skip)=>DR.some((Q,k)=>k!==skip&&x>Q[0]-m&&x<Q[1]+m&&z>Q[2]-m&&z<Q[3]+m),pts=[],rr=rng(991);
+ DR.forEach((R,ri)=>{const[x0,x1,z0,z1]=R;for(const[ax,az,bx2,bz,nx,nz]of[[x0,z0,x1,z0,0,-1],[x0,z1,x1,z1,0,1],[x0,z0,x0,z1,-1,0],[x1,z0,x1,z1,1,0]]){const L=Math.hypot(bx2-ax,bz-az);
+  for(const[off,rad,stp]of[[1.75,1.85,2.2],[4.4,2.7,3.4]]){const n=Math.max(1,Math.round(L/stp));for(let i=0;i<=n;i++){const t=i/n,x=ax+(bx2-ax)*t+nx*off,z=az+(bz-az)*t+nz*off;if(inAny(x,z,rad+.35,ri)||inAny(x,z,off-.2,-1))continue;pts.push([x,z,rad])}}}});
  const RV=['Rock_Medium_1','Rock_Medium_2','Rock_Medium_3'].filter(n=>NAT&&NAT[n]);const dm=new THREE.Object3D();
  if(RV.length){const byV=RV.map(()=>[]);for(const p of pts)byV[(rr()*RV.length)|0].push(p);
-  RV.forEach((nm,vi)=>{const L=byV[vi];if(!L.length)return;for(const part of NAT[nm].parts){const mat=part.mat.clone?part.mat.clone():part.mat;if(mat.color&&mat.color.clone)mat.color=mat.color.clone().multiply(TC.setHex(0x8a7f9a));const im=new THREE.InstancedMesh(part.geo,mat,L.length);im.castShadow=true;im.receiveShadow=true;
-   L.forEach((p,i)=>{dm.position.set(X+p[0],Y-.4,Z+p[1]);dm.rotation.set((rr()-.5)*.3,rr()*6.28,(rr()-.5)*.3);const s=(2.3+rr()*1.2)*p[2];dm.scale.set(s,s*(1.1+rr()*.5),s);dm.updateMatrix();im.setMatrixAt(i,dm.matrix)});G.add(im)}})}
- else{const im=new THREE.InstancedMesh(new THREE.BoxGeometry(2.6,4.5,2.6),new THREE.MeshStandardMaterial({color:0x3a3442,roughness:1}),pts.length);pts.forEach((p,i)=>{dm.position.set(X+p[0],Y+2,Z+p[1]);dm.rotation.set(0,rr()*6.28,0);dm.scale.setScalar(p[2]);dm.updateMatrix();im.setMatrixAt(i,dm.matrix)});G.add(im)}
+  RV.forEach((nm,vi)=>{const L=byV[vi];if(!L.length)return;let R0=0,H0=0;for(const part of NAT[nm].parts){part.geo.computeBoundingBox();const b=part.geo.boundingBox;R0=Math.max(R0,-b.min.x,b.max.x,-b.min.z,b.max.z);H0=Math.max(H0,b.max.y)}R0=R0||1;H0=H0||R0;for(const part of NAT[nm].parts){const mat=part.mat.clone?part.mat.clone():part.mat;if(mat.color&&mat.color.clone)mat.color=mat.color.clone().multiply(TC.setHex(0x8a7f9a));const im=new THREE.InstancedMesh(part.geo,mat,L.length);im.castShadow=true;im.receiveShadow=true;
+   L.forEach((p,i)=>{dm.position.set(X+p[0],Y-.4,Z+p[1]);dm.rotation.set((rr()-.5)*.16,rr()*6.28,(rr()-.5)*.16);const s=p[2]/R0*(.92+rr()*.16),sy=Math.max(s,(5.2+rr()*2.2)/H0);dm.scale.set(s,sy,s);dm.updateMatrix();im.setMatrixAt(i,dm.matrix)});G.add(im)}})}
+ else{const im=new THREE.InstancedMesh(new THREE.BoxGeometry(2.6,4.5,2.6),new THREE.MeshStandardMaterial({color:0x3a3442,roughness:1}),pts.length);pts.forEach((p,i)=>{dm.position.set(X+p[0],Y+2,Z+p[1]);dm.rotation.set(0,rr()*6.28,0);dm.scale.setScalar(p[2]/1.85);dm.updateMatrix();im.setMatrixAt(i,dm.matrix)});G.add(im)}
  // obor
  const postM=new THREE.MeshStandardMaterial({color:0x3a2616,roughness:1}),glowM=new THREE.MeshBasicMaterial({color:0xffa040}),postG=new THREE.CylinderGeometry(.09,.13,2,6),bowlG=new THREE.CylinderGeometry(.32,.16,.3,8);
  for(const ri of[0,2,4,6]){const[x0,x1,z0,z1]=DR[ri];const sp=ri===0?9:12;for(let z=z1-4;z>z0+2;z-=sp)for(const x of[x0+.9,x1-.9]){const tp=new THREE.Group();const p1=new THREE.Mesh(postG,postM);p1.position.y=1;const b=new THREE.Mesh(bowlG,glowM);b.position.y=2.1;tp.add(p1,b);tp.position.set(X+x,Y,Z+z);G.add(tp);DUN.torches.push([X+x,Y+2.3,Z+z])}}
+ // 3.2: gerbang batu di setiap pintu, obor dinding, lilin & cahaya lantai
+ {const stM=new THREE.MeshStandardMaterial({map:ft,color:0xa49cb0,roughness:.9}),capM=new THREE.MeshStandardMaterial({color:0x5a4a3a,roughness:.7,metalness:.3}),ironM=new THREE.MeshStandardMaterial({color:0x2a2622,roughness:.5,metalness:.7}),
+  pilG=new THREE.BoxGeometry(1.5,5.6,1.5),linG=new THREE.BoxGeometry(10.2,1.1,1.8),keyG=new THREE.BoxGeometry(1.4,1.5,2),capG=new THREE.BoxGeometry(1.9,.4,1.9),
+  scG=new THREE.CylinderGeometry(.07,.05,.7,6),cupG=new THREE.CylinderGeometry(.2,.1,.26,8),
+  cdM=new THREE.MeshStandardMaterial({color:0xf2e6c8,roughness:.6,emissive:0x3a2a10}),tipM=new THREE.MeshBasicMaterial({color:0xffd890}),cdG=new THREE.CylinderGeometry(.07,.08,1,8),tipG=new THREE.SphereGeometry(.06,6,5);
+  const gc=document.createElement('canvas');gc.width=gc.height=128;{const c=gc.getContext('2d'),g=c.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(255,190,110,.9)');g.addColorStop(.35,'rgba(255,140,60,.35)');g.addColorStop(1,'rgba(255,120,40,0)');c.fillStyle=g;c.fillRect(0,0,128,128)}
+  const glowT=new THREE.CanvasTexture(gc),poolM=new THREE.MeshBasicMaterial({map:glowT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:.55}),poolG=new THREE.PlaneGeometry(1,1);
+  const pool=(x,z,r,o)=>{const m=new THREE.Mesh(poolG,o?poolM.clone():poolM);if(o)m.material.opacity=o;m.rotation.x=-Math.PI/2;m.scale.set(r*2,r*2,1);m.position.set(x,Y+.03,z);G.add(m)};
+  const sconce=(x,y,z,dir)=>{const b=new THREE.Mesh(scG,ironM);b.position.set(x,y-.25,z);b.rotation.z=dir*.5;G.add(b);const cp=new THREE.Mesh(cupG,ironM);cp.position.set(x+dir*.18,y+.05,z);G.add(cp);DUN.torches.push([x+dir*.18,y+.35,z,1.15]);DUN.lpts.push([x+dir*.4,y+.3,z]);pool(x+dir*1.2,z,3.2)};
+  // gerbang
+  for(const gz of[-9,-30,-58,-78,-108,-128]){const gate=gz===-58||gz===-108;
+   for(const sx of[-1,1]){const p=new THREE.Mesh(pilG,stM);p.position.set(X+sx*4.05,Y+2.8,Z+gz);p.castShadow=p.receiveShadow=true;G.add(p);const c=new THREE.Mesh(capG,capM);c.position.set(X+sx*4.05,Y+5.75,Z+gz);G.add(c);
+    for(const sz of[-1,1])sconce(X+sx*3.15,Y+3.1,Z+gz+sz*.95,-sx)}
+   const l=new THREE.Mesh(linG,stM);l.position.set(X,Y+6.4,Z+gz);l.castShadow=true;G.add(l);const k=new THREE.Mesh(keyG,gate?new THREE.MeshBasicMaterial({color:0xb48cff}):capM);k.position.set(X,Y+6.4,Z+gz);G.add(k)}
+  // obor dinding sepanjang lorong
+  for(const ri of[1,3,5]){const[x0,x1,z0,z1]=DR[ri];let side=1;for(let z=z1-6;z>z0+4;z-=6.5){sconce(X+side*(x1-.15),Y+2.7,Z+z,-side);side=-side}}
+  // obor dinding & lilin di bilik
+  for(const ri of[0,2,4,6]){const[x0,x1,z0,z1]=DR[ri];
+   for(let x=x0+4;x<x1-3;x+=7){if(Math.abs(x)<5)continue;sconce(X+x,Y+2.8,Z+z1-.15,0);sconce(X+x,Y+2.8,Z+z0+.15,0)}
+   for(const[cx,cz]of[[x0+1.4,z0+1.4],[x1-1.4,z0+1.4],[x0+1.4,z1-1.4],[x1-1.4,z1-1.4]]){const n=3+((Math.random()*3)|0);let top=0;
+    for(let i=0;i<n;i++){const a=i*2.4+Math.random(),r=i?.25+Math.random()*.35:0,h=.35+Math.random()*.55;top=Math.max(top,h);const c=new THREE.Mesh(cdG,cdM);c.scale.y=h;c.position.set(X+cx+Math.cos(a)*r,Y+h/2,Z+cz+Math.sin(a)*r);G.add(c);const tp=new THREE.Mesh(tipG,tipM);tp.position.set(c.position.x,Y+h+.06,c.position.z);G.add(tp)}
+    DUN.torches.push([X+cx,Y+top+.25,Z+cz,.55]);DUN.lpts.push([X+cx,Y+.9,Z+cz]);pool(X+cx,Z+cz,2.2,.4)}}
+  for(const T of DUN.torches)if(T[3]==null){DUN.lpts.push([T[0],T[1],T[2]]);pool(T[0],T[2],2.8)}
+  // kolam lampu sebenar: 8 PointLight dipindah ke obor terdekat
+  DUN.lp=[];for(let i=0;i<6;i++){const L=new THREE.PointLight(0xff9a48,0,16,1.5);G.add(L);DUN.lp.push(L)}}
+
  // pintu rune
  const GF=`uniform float uT;varying vec2 vU;void main(){float s=sin(vU.y*26.-uT*4.)*.5+.5;float e=smoothstep(0.,.12,vU.x)*smoothstep(1.,.88,vU.x);float r=abs(fract(vU.x*5.+uT*.25)-.5);float a=(.22+.4*s*s+.55*smoothstep(.07,0.,r))*e*smoothstep(1.,.75,vU.y);gl_FragColor=vec4(vec3(.62,.36,1.)*(1.+s),a);}`;
  for(const gz of[-58,-108]){const gm=new THREE.Mesh(new THREE.PlaneGeometry(7.4,6),new THREE.ShaderMaterial({uniforms:{uT:{value:0}},vertexShader:FBV,fragmentShader:GF,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));gm.position.set(X,Y+3,Z+gz);G.add(gm);DUN.gates.push(gm)}
  const p0=portalMesh(3.6,5.2,0x8ad0ff);p0.position.set(X,Y+2.8,Z+8.2);G.add(p0);DUN.p0=p0;const pw=portalMesh(4.2,6,0xffd070);pw.position.set(X,Y+3.2,Z-158);G.add(pw);DUN.winP=pw;G.visible=false}
-function dunTorches(on){for(const h of DUN.tfx)if(h&&h.f)h.f.t=h.f.dur;DUN.tfx=[];if(!on||!VFX.on)return;for(const[x,y,z]of DUN.torches)DUN.tfx.push(fb('flame',x,y,z,{size:1.7,dur:1e5,loop:1,nc:1,face:'y',alive:()=>INDUN}))}
+function dunTorches(on){for(const h of DUN.tfx)if(h&&h.f)h.f.t=h.f.dur;DUN.tfx=[];if(!on||!VFX.on)return;for(const[x,y,z,sz]of DUN.torches)DUN.tfx.push(fb('flame',x,y,z,{size:sz||1.7,dur:1e5,loop:1,nc:1,face:'y',alive:()=>INDUN}))}
 function dunEnter(d){if(INDUN||P.dead)return;closeDlg();apCancel('');buildDun();const fd=$('#fadeO');fd.style.opacity=1;sfx('whoosh',.8);
  setTimeout(()=>{INDUN=true;Object.assign(DUN,{diff:d,lv:Math.min(30,P.lvl+[0,3,6][d]),gate:0,started:[0,0,0],cleared:[0,0,0],wave:[[],[],[]],won:false,t:0,boss:null,portals:[{x:DUN.x,z:DUN.z+7.6,win:0}]});
   for(const m of mobs.slice())if(!m.dun)removeMob(m);ELM=null;for(const B of BOSSES)B.m=null;
@@ -1576,7 +1606,7 @@ function dunBossDown(m){if(DUN.won)return;const d=DUN.diff,L=DUN.lv,gold=Math.ro
  for(let i=0;i<2+(d>=2?1:0);i++)rollGear(L,d>=2?'neraka':'dun',m.x,m.g.position.y+2,m.z);P.bag.Rune+=3+d*2;if(d>=2)P.bag.Sisik++;const best=P.ex.dun[d];if(!best||secs<best)P.ex.dun[d]=Math.round(secs);const nu=d+1>(P.ex.dunClr||0);P.ex.dunClr=Math.max(P.ex.dunClr||0,d+1);qEvent('dungeon');
  DUN.won=true;DUN.winP.visible=true;DUN.portals.push({x:DUN.x,z:DUN.z-158,win:1});for(const w of DUN.wave)for(const x of w)if(!x.dead)killMob(x);
  setTimeout(()=>toast(`🏆 GUA KELAM DITAWAN • ${DNAME[d]}\n${mmss(secs)} • +${gold} 🪙 • +${kr} 💎${nu&&d<2?`\nKesukaran ${DNAME[d+1]} dibuka!`:''}`,5200),900);hud();dirty=true}
-function dunUpdate(dt,t){DUN.t+=dt;const h=hero.position;
+function dunUpdate(dt,t){DUN.t+=dt;const h=hero.position;dunLights(t);
  scene.fog.color.setHex(0x07060b);scene.fog.density=.019;hemi.intensity=.95;hemi.color.setHex(0x7a6aa8);sun.intensity=.22;sun.color.setHex(0x9a8ac8);heroCandle(t,1,true);
  rain.visible=false;stars.material.opacity=0;moon.visible=false;renderer.toneMappingExposure=1.12;scene.background=DUNBG;
  for(const g of DUN.gates)g.material.uniforms.uT.value=t;DUN.p0.material.uniforms.uT.value=t;DUN.winP.material.uniforms.uT.value=t;
@@ -1885,7 +1915,7 @@ function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDel
  if(P.atkT>0){P.atkT-=dt;const p=1-Math.max(0,P.atkT)/.3,e=p<.35?p/.35:1;armR.rotation.x=p<.35?lerp(-.2,-2.7,e):lerp(-2.7,-.35,(p-.35)/.65);armR.rotation.z=p<.35?0:-.5*Math.sin((p-.35)/.65*Math.PI)}else{armR.rotation.x=moving?-swing*.6-.25:-.25+Math.sin(t*1.5)*.03;armR.rotation.z=0}}
  trail.position.set(hero.position.x,hero.position.y+1.3,hero.position.z);trail.rotation.z=hero.rotation.y-Math.PI/2;trail.material.opacity=C.kind==='melee'?Math.max(0,trail.material.opacity-dt*2.6):0;
  // kamera
- const s=Math.sin(camYaw),c=Math.cos(camYaw);tgt.set(hero.position.x,hero.position.y+2.1,hero.position.z);camPos.set(tgt.x+s*camDist,tgt.y+camDist*.61,tgt.z+c*camDist);const ch=heightAt(camPos.x,camPos.z)+1.4;if(camPos.y<ch)camPos.y=ch;camera.position.lerp(camPos,.09);if(shake>0){shake-=dt;camera.position.x+=(Math.random()-.5)*shake*1.6;camera.position.y+=(Math.random()-.5)*shake*1.6}camera.lookAt(tgt.x-s*1.5,tgt.y+.25,tgt.z-c*1.5);
+ const s=Math.sin(camYaw),c=Math.cos(camYaw);tgt.set(hero.position.x,hero.position.y+2.1,hero.position.z);camPos.set(tgt.x+s*camDist,tgt.y+camDist*.61,tgt.z+c*camDist);const ch=heightAt(camPos.x,camPos.z)+1.4;if(camPos.y<ch)camPos.y=ch;if(INDUN)dunCam(camPos);camera.position.lerp(camPos,.09);if(shake>0){shake-=dt;camera.position.x+=(Math.random()-.5)*shake*1.6;camera.position.y+=(Math.random()-.5)*shake*1.6}camera.lookAt(tgt.x-s*1.5,tgt.y+.25,tgt.z-c*1.5);
  sun.position.set(hero.position.x+SUN.x*115,hero.position.y+SUN.y*115,hero.position.z+SUN.z*115);sun.target.position.copy(hero.position);
  dustPts.position.set(hero.position.x,hero.position.y,hero.position.z);dustPts.rotation.y=t*.012;
  // mob
