@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#08170f"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png"><title>Legenda Hutan Belantara — Modular Hero Update 2.6</title>
+<meta name="theme-color" content="#08170f"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png"><title>Legenda Hutan Belantara — Armor Model Update 2.8</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -164,7 +164,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08170f;col
  <div class="col">
   <div id="mapWrap"><canvas id="mini" width="256" height="256" title="Ketik untuk peta penuh"></canvas><div id="wpInfo" hidden></div></div>
   <div class="mrow"><a id="menuT">☰ MENU</a><a id="invB">🎒 BEG</a><a id="mapB">🗺 PETA</a></div>
-  <div id="menuL" class="closed"><a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="musB" class="musB">🔊 MUZIK</a><a id="sfxB">🔔 BUNYI</a><a id="fsB">⛶ SKRIN PENUH</a><div class="sub" id="ver">LEGENDA HUTAN • MODULAR HERO UPDATE 2.6</div></div>
+  <div id="menuL" class="closed"><a id="back" href="./index.html">← MENU UTAMA</a><a id="swap" href="?pilih">⇄ TUKAR WIRA</a><a id="musB" class="musB">🔊 MUZIK</a><a id="sfxB">🔔 BUNYI</a><a id="fsB">⛶ SKRIN PENUH</a><div class="sub" id="ver">LEGENDA HUTAN • ARMOR MODEL UPDATE 2.8</div></div>
  </div>
  <div class="col r">
   <div class="panel stats">
@@ -668,7 +668,7 @@ function play(name,once=false,ts=1,fade=.18){const a=A.actions[name];if(!a)retur
 async function setupModel(){const b64=await modelP;if(!b64){console.warn('Model tidak dimuat — guna model asas');return}
  try{const gltf=await new Promise((res,rej)=>new GLTFLoader().parse(b64ToBuf(b64),'',res,rej));const m=gltf.scene;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false}});
   const bx=mBox(gltf,m);const h=(bx.hi-bx.lo)||1,sc=3.0/h;m.scale.setScalar(sc);m.position.y=-bx.lo*sc;
-  hero.remove(heroRig);hero.add(m);A.gltf=gltf;try{applyLook(m,P.eq)}catch(e){console.warn('look',e)}A.mixer=new THREE.AnimationMixer(m);for(const clip of gltf.animations)A.actions[clip.name]=A.mixer.clipAction(clip);play(C.idle)}catch(e){console.warn('Ralat model',e)}}
+  hero.remove(heroRig);hero.add(m);A.gltf=gltf;try{applyLook(m,P.eq);buildArmorOverlays(m,P.eq)}catch(e){console.warn('look',e)}A.mixer=new THREE.AnimationMixer(m);for(const clip of gltf.animations)A.actions[clip.name]=A.mixer.clipAction(clip);play(C.idle)}catch(e){console.warn('Ralat model',e)}}
 // ---- templat monster (Quaternius Ultimate Monsters) ----
 const MONT={};
 const ANIMSET={monster:{idle:'Idle',walk:'Walk',run:'Run',atk:['Punch','Weapon'],hit:'HitReact',death:'Death'},animal:{idle:'Idle',walk:'Walk',run:'Gallop',atk:['Attack','Attack_Headbutt','Attack_Kick'],hit:'Idle_HitReact1',death:'Death'}};
@@ -1057,7 +1057,36 @@ function applyLook(root,eq){
  });
  root.userData.glows=glows;return true
 }
-function applyHeroLook(){if(A.gltf)applyLook(A.gltf.scene,P.eq);if(DOLL.obj)applyLook(DOLL.obj,P.eq)}
+// Armor 2.8: bina lapisan plat 3D berskinning daripada geometri asal supaya ikut rangka/animasi.
+function buildArmorOverlays(root,eq){
+ if(!root)return;
+ root.traverse(o=>{if(o.userData&&o.userData.lhbArmorOverlay&&o.parent)o.parent.remove(o)});
+ const plans=[
+  {slot:'c',variant:'armor',names:['C_ranger'],scale:1.105,color:0x9ba9bb,accent:0xd8e4f2},
+  {slot:'g',variant:'gaunt',names:['G_ranger','G_bracer'],scale:1.10,color:0x9ba9bb,accent:0xd8e4f2},
+  {slot:'l',variant:'legarm',names:['L_ranger'],scale:1.075,color:0x9ba9bb,accent:0xd8e4f2},
+  {slot:'b',variant:'greaves',names:['F_ranger'],scale:1.075,color:0x9ba9bb,accent:0xd8e4f2}
+ ];
+ const tier=[0x806348,0x4c8057,0x527ba8,0x76529d,0xc18a35,0x9d3945];
+ for(const plan of plans){
+  const it=eq&&eq[plan.slot];if(!it||it.v!==plan.variant)continue;
+  for(const name of plan.names){
+   const src=root.getObjectByName(name);if(!src||!src.isSkinnedMesh||!src.parent)continue;
+   const shell=src.clone(false);shell.geometry=src.geometry.clone();
+   const pos=shell.geometry.attributes.position;
+   if(pos){shell.geometry.computeBoundingBox();const bb=shell.geometry.boundingBox,c=bb.getCenter(new THREE.Vector3());
+    for(let i=0;i<pos.count;i++){const x=(pos.getX(i)-c.x)*plan.scale+c.x,y=(pos.getY(i)-c.y)*plan.scale+c.y,z=(pos.getZ(i)-c.z)*plan.scale+c.z;pos.setXYZ(i,x,y,z)}
+    pos.needsUpdate=true;shell.geometry.computeVertexNormals();shell.geometry.computeBoundingSphere();}
+   const tint=new THREE.Color(tier[it.r]||plan.color);
+   const makeMat=m=>{const q=m.clone();q.color.copy(tint);q.metalness=Math.max(.72,q.metalness||0);q.roughness=Math.min(.34,q.roughness==null?.5:q.roughness);q.emissive.setHex(it.r>=3?RGLOW[it.r]:0x000000);q.emissiveIntensity=it.r>=3?.16+it.r*.045:0;q.polygonOffset=true;q.polygonOffsetFactor=-1;q.polygonOffsetUnits=-1;return q};
+   shell.material=Array.isArray(src.material)?src.material.map(makeMat):makeMat(src.material);
+   shell.name='LHB_ARMOR_OVERLAY_'+plan.slot+'_'+name;shell.userData.lhbArmorOverlay=true;shell.userData.armorRarity=it.r;
+   shell.castShadow=true;shell.receiveShadow=true;shell.frustumCulled=false;
+   shell.bind(src.skeleton,src.bindMatrix);src.parent.add(shell);
+  }
+ }
+}
+function applyHeroLook(){if(A.gltf){applyLook(A.gltf.scene,P.eq);buildArmorOverlays(A.gltf.scene,P.eq)}if(DOLL.obj){applyLook(DOLL.obj,P.eq);buildArmorOverlays(DOLL.obj,P.eq)}}
 function glowTick(root,t){const G=root&&root.userData.glows;if(!G)return;const k=.65+.35*Math.sin(t*3.2);for(const[M,g]of G)M.emissiveIntensity=g*k}
 // Animasi kelengkapan belakang: jubah beralun, sayap mengepak, beg bergerak mengikut langkah.
 function gearMotionTick(root,t,moving=false){if(!root)return;root.traverse(o=>{const n=o.name||(o.userData&&o.userData.name)||'';if(!['K_cape','K_wings','K_pack'].includes(n))return;if(!o.userData.gearRest)o.userData.gearRest={x:o.rotation.x,y:o.rotation.y,z:o.rotation.z};const b=o.userData.gearRest;if(n==='K_cape'){o.rotation.x=b.x+Math.sin(t*3.1)*.055+(moving?-.035:0);o.rotation.z=b.z+Math.sin(t*2.2+.6)*.035}else if(n==='K_wings'){const flap=Math.sin(t*5.2)*.16;o.rotation.x=b.x+flap;o.rotation.z=b.z+Math.sin(t*5.2+1.1)*.12}else{o.rotation.x=b.x+(moving?Math.sin(t*8)*.035:Math.sin(t*1.8)*.012)}})}
@@ -1132,7 +1161,7 @@ const DOLL={on:false,r:null,sc:null,cam:null,mix:null,obj:null,rot:0,drag:null};
 function setupDoll(box){if(!box)return;if(!A.gltf){box.insertAdjacentHTML('beforeend',`<div class="dfb">${{Warrior:'⚔️',Ranger:'🏹',Wizard:'🔮'}[CLS]}</div>`);return}
  if(!DOLL.r){try{DOLL.r=new THREE.WebGLRenderer({antialias:true,alpha:true});DOLL.r.setPixelRatio(Math.min(2,devicePixelRatio||1));DOLL.r.outputColorSpace=THREE.SRGBColorSpace;DOLL.r.toneMapping=THREE.ACESFilmicToneMapping;DOLL.sc=new THREE.Scene();DOLL.cam=new THREE.PerspectiveCamera(26,1,.1,50);DOLL.cam.position.set(0,1.75,9.2);DOLL.cam.lookAt(0,1.5,0);
   DOLL.sc.add(new THREE.HemisphereLight(0xfff0d8,0x2a1608,1.4));const d=new THREE.DirectionalLight(0xffffff,2.4);d.position.set(-3,5,6);DOLL.sc.add(d);const rim=new THREE.PointLight(0xff6a1a,30,14);rim.position.set(1.5,2.5,-3);DOLL.sc.add(rim);const rim2=new THREE.PointLight(0xff9a40,12,10);rim2.position.set(-2.5,.5,-2);DOLL.sc.add(rim2);
-  const o=skClone(A.gltf.scene);o.position.set(0,0,0);o.rotation.set(0,0,0);o.traverse(x=>{if(x.isMesh)x.frustumCulled=false});DOLL.sc.add(o);DOLL.obj=o;try{applyLook(o,P.eq)}catch(e){}DOLL.mix=new THREE.AnimationMixer(o);const cl=A.gltf.animations.find(c=>c.name==='Idle_Attacking')||A.gltf.animations.find(c=>c.name==='Idle')||A.gltf.animations[0];if(cl)DOLL.mix.clipAction(cl).play();
+  const o=skClone(A.gltf.scene);o.position.set(0,0,0);o.rotation.set(0,0,0);o.traverse(x=>{if(x.isMesh)x.frustumCulled=false});DOLL.sc.add(o);DOLL.obj=o;try{applyLook(o,P.eq);buildArmorOverlays(o,P.eq)}catch(e){}DOLL.mix=new THREE.AnimationMixer(o);const cl=A.gltf.animations.find(c=>c.name==='Idle_Attacking')||A.gltf.animations.find(c=>c.name==='Idle')||A.gltf.animations[0];if(cl)DOLL.mix.clipAction(cl).play();
   const ring=new THREE.Mesh(new THREE.RingGeometry(.9,1.25,48),new THREE.MeshBasicMaterial({color:0xff8a2a,transparent:true,opacity:.35,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.02;DOLL.sc.add(ring);
   const cv=DOLL.r.domElement;cv.addEventListener('pointerdown',e=>{DOLL.drag=e.clientX;cv.setPointerCapture(e.pointerId)});cv.addEventListener('pointermove',e=>{if(DOLL.drag!=null){DOLL.rot+=(e.clientX-DOLL.drag)*.012;DOLL.drag=e.clientX}});['pointerup','pointercancel'].forEach(ev=>cv.addEventListener(ev,()=>DOLL.drag=null))}catch(e){console.warn('doll',e);DOLL.r=null;return}}
  try{box.insertBefore(DOLL.r.domElement,box.firstChild);const w=box.clientWidth||200,h=box.clientHeight||300;DOLL.r.setSize(w,h,false);DOLL.cam.aspect=w/h;DOLL.cam.updateProjectionMatrix();DOLL.on=true}catch(e){console.warn('doll',e)}}
