@@ -125,6 +125,7 @@ body{font-family:Rajdhani,sans-serif;color:#e9e4d8}
 .pw-flash.go{animation:flash 1s ease forwards}
 @keyframes flash{0%{opacity:0}30%{opacity:1}100%{opacity:1;background:#000}}
 </style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
 <body>
 <div id="pw-viewport">
@@ -388,6 +389,49 @@ const WIRA = [
   try{ const c = localStorage.getItem('lhb_class'); const k = Object.keys(KELAS).find(id=>KELAS[id]===c); if(k) last = WIRA.findIndex(w=>w.id===k); }catch(e){}
   select(Math.max(0,last));
 })();
+</script>
+
+<script type="module">
+/* =========================================================
+   MODEL 3D WIRA — guna model sama seperti dalam game (models/*.js)
+   ========================================================= */
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const PW=window.PilihWira;if(!PW)throw 0;
+const KELAS={pahlawan:'Warrior',pemanah:'Ranger',ahlisihir:'Wizard'};
+const ANIM={Warrior:['Idle_Attacking','Sword_Attack'],Ranger:['Idle_Attacking','Bow_Shoot'],Wizard:['Idle_Attacking','Spell1']};
+const PRESET={Warrior:['B_body','B_beard','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_helm','S_pauldron','K_cape','W_sword','O_shield'],
+ Ranger:['B_body','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_hood','S_pauldron','W_bow','O_dagger'],
+ Wizard:['B_body','B_beard','C_peasant','G_peasant','L_peasant','F_peasant','H_hood','W_staff','K_cape','X_amulet']};
+const slot=document.getElementById('hero-model-slot');
+let R;try{R=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){throw e}
+R.setPixelRatio(Math.min(2,devicePixelRatio||1));R.outputColorSpace=THREE.SRGBColorSpace;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;R.setSize(400,600,false);
+const S=new THREE.Scene(),cam=new THREE.PerspectiveCamera(28,400/600,.1,50);cam.position.set(0,1.55,7.4);cam.lookAt(0,1.35,0);
+S.add(new THREE.HemisphereLight(0xfff0d8,0x1a1410,1.3));const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(-2.5,4,5);S.add(key);
+const rim=new THREE.PointLight(0xff9a3c,35,12);rim.position.set(1.8,2.6,-2.2);S.add(rim);const rim2=new THREE.PointLight(0xff9a3c,14,10);rim2.position.set(-2.2,.6,-1.6);S.add(rim2);
+const b64=b=>{const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer};
+const loadJS=src=>new Promise(r=>{const e=document.createElement('script');e.src=src;e.onload=()=>r(true);e.onerror=()=>r(false);document.head.appendChild(e)});
+const KN=o=>{for(const n of[o&&o.name,o&&o.userData&&o.userData.name]){const q=n&&/^([A-Z]_[a-z]+)(_\d+)?$/.exec(n);if(q)return q[1]}return null};
+const H={},clock=new THREE.Clock();let cur=null,shown=false;
+async function get(k){if(H[k])return H[k];const job=(async()=>{
+  if(!(window.LHB_MODELS&&window.LHB_MODELS[k]))await loadJS('models/'+k+'.js?v=29');const b=window.LHB_MODELS&&window.LHB_MODELS[k];if(!b)return null;
+  const g=await new Promise((res,rej)=>new GLTFLoader().parse(b64(b),'',res,rej));delete window.LHB_MODELS[k];const m=g.scene;
+  // sembunyi bahagian yang tidak dipakai (model kelengkapan modular)
+  let kit=false;m.traverse(o=>{if(KN(o)==='B_body')kit=true});const P=new Set(PRESET[k]);
+  m.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;if(kit){let q=o,gn=null;while(q&&!(gn=KN(q)))q=q.parent;if(gn)o.visible=P.has(gn)}const mn=(o.material&&o.material.name)||'';if(mn.startsWith('BowBack_'))o.visible=false});
+  const e=g.asset&&g.asset.extras,lo=e&&e.lo!=null?e.lo:0,hi=e&&e.hi!=null?e.hi:1.8,sc=2.75/((hi-lo)||1);m.scale.setScalar(sc);m.position.y=-lo*sc;
+  const mix=new THREE.AnimationMixer(m),acts={};for(const c of g.animations)acts[c.name]=mix.clipAction(c);
+  const h={k,m,mix,acts,cur:null};mix.addEventListener('finished',()=>play(h,ANIM[k][0]));return h})();H[k]=job;return job}
+function play(h,n,once){const a=h.acts[n]||h.acts.Idle_Weapon||h.acts.Idle;if(!a)return;a.reset();a.setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,Infinity);a.clampWhenFinished=!!once;a.play();if(h.cur&&h.cur!==a)a.crossFadeFrom(h.cur,.25,false);h.cur=a}
+let want=null;
+async function show(w){const k=KELAS[w.id];want=k;rim.color.set(w.color);rim2.color.set(w.color);const h=await get(k);if(!h||want!==k)return;
+  if(cur&&cur!==h)S.remove(cur.m);S.add(h.m);h.m.rotation.y=-.35;play(h,ANIM[k][1],true);cur=h;
+  if(!shown){shown=true;PW.useCanvas(R.domElement)}
+  for(const o of Object.values(KELAS))if(o!==k)get(o)}
+PW.onSelect(w=>show(w));show(PW.current);
+let drag=null,rot=0;R.domElement.style.cursor='grab';R.domElement.style.pointerEvents='auto';slot.style.pointerEvents='auto';
+R.domElement.addEventListener('pointerdown',e=>{drag=e.clientX;R.domElement.setPointerCapture(e.pointerId)});R.domElement.addEventListener('pointermove',e=>{if(drag!=null){rot+=(e.clientX-drag)*.012;drag=e.clientX}});['pointerup','pointercancel'].forEach(v=>R.domElement.addEventListener(v,()=>drag=null));
+(function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);if(cur){cur.mix.update(dt);cur.m.rotation.y=-.35+rot+Math.sin(clock.elapsedTime*.45)*.35}R.render(S,cam)})();
 </script>
 </body>
 </html>
