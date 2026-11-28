@@ -533,7 +533,7 @@ async function addIdyllic(){if(!await idyP||!window.LHB_MODELS||!window.LHB_MODE
   const pick=(pre,nn)=>Array.from({length:nn},(_,i)=>'I_'+pre+String(i+1).padStart(2,'0')).filter(n=>NAT[n]);
   const bl=pick('BroadleafTree_',5),fi=pick('Fir_',5),wi=pick('WillowTree_',5);
   if(bl.length){TREE_VAR.broad=bl.concat(bl.slice(0,4));for(const n of bl)TREE_SC[n]=1.05}
-  if(fi.length){TREE_VAR.pine=fi;for(const n of fi)TREE_SC[n]=1.12}
+  if(fi.length){TREE_VAR.pine=fi;for(const n of fi)TREE_SC[n]=.85}
   if(wi.length){TREE_VAR.swamp=wi.concat(['DeadTree_2']);for(const n of wi)TREE_SC[n]=1.0}
   // penutup tanah & hiasan
   const C=(n,s,w,m)=>{if(NAT['I_'+n])COVER.push(['I_'+n,s,w,m])},D=(n,s,w)=>{if(NAT['I_'+n])DECOR.push(['I_'+n,s,w])};
