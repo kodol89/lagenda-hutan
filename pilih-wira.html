@@ -400,9 +400,9 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 const PW=window.PilihWira;if(!PW)throw 0;
 const KELAS={pahlawan:'Warrior',pemanah:'Ranger',ahlisihir:'Wizard'};
 const ANIM={Warrior:['Idle_Attacking','Sword_Attack'],Ranger:['Idle_Attacking','Bow_Shoot'],Wizard:['Idle_Attacking','Spell1']};
-const PRESET={Warrior:['B_body','B_beard','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_helm','S_pauldron','K_cape','W_sword','O_shield'],
- Ranger:['B_body','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_hood','S_pauldron','W_bow','O_dagger'],
- Wizard:['B_body','B_beard','C_peasant','G_peasant','L_peasant','F_peasant','H_hood','W_staff','K_cape','X_amulet']};
+const PRESET={Warrior:['B_body','B_beard','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','S_pauldron','K_cape','W_sword','O_shield'],
+ Ranger:['B_body','C_ranger','G_ranger','G_bracer','L_ranger','F_ranger','H_hood','S_pauldron','W_bow','W_bowback','O_dagger'],
+ Wizard:['B_body','B_beard','C_peasant','G_peasant','G_bracer','L_peasant','F_peasant','H_hood','W_staff','K_cape','X_amulet']};
 const slot=document.getElementById('hero-model-slot');
 let R;try{R=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){throw e}
 R.setPixelRatio(Math.min(2,devicePixelRatio||1));R.outputColorSpace=THREE.SRGBColorSpace;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;R.setSize(400,600,false);
@@ -414,7 +414,7 @@ const loadJS=src=>new Promise(r=>{const e=document.createElement('script');e.src
 const KN=o=>{for(const n of[o&&o.name,o&&o.userData&&o.userData.name]){const q=n&&/^([A-Z]_[a-z]+)(_\d+)?$/.exec(n);if(q)return q[1]}return null};
 const H={},clock=new THREE.Clock();let cur=null,shown=false;
 async function get(k){if(H[k])return H[k];const job=(async()=>{
-  if(!(window.LHB_MODELS&&window.LHB_MODELS[k]))await loadJS('models/'+k+'.js?v=29');const b=window.LHB_MODELS&&window.LHB_MODELS[k];if(!b)return null;
+  if(!(window.LHB_MODELS&&window.LHB_MODELS[k]))await loadJS('models/'+k+'.js?v=33');const b=window.LHB_MODELS&&window.LHB_MODELS[k];if(!b)return null;
   const g=await new Promise((res,rej)=>new GLTFLoader().parse(b64(b),'',res,rej));delete window.LHB_MODELS[k];const m=g.scene;
   // sembunyi bahagian yang tidak dipakai (model kelengkapan modular)
   let kit=false;m.traverse(o=>{if(KN(o)==='B_body')kit=true});const P=new Set(PRESET[k]);
