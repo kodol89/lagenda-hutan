@@ -353,7 +353,7 @@ Object.assign(ICO,{"i_crown":"data:image/webp;base64,UklGRigMAABXRUJQVlA4WAoAAAA
 const IMG=(k,c='')=>ICO[k]?`<img class="ico ${c}" src="${ICO[k]}" alt="">`:'',SKI=s=>s.im&&ICO[s.im]?`<img class="skimg" src="${ICO[s.im]}" alt="">`:s.ic;
 function mBox(g,m){const e=g&&g.asset&&g.asset.extras;if(e&&e.hi!=null)return{lo:e.lo,hi:e.hi};m.updateMatrixWorld(true);const box=new THREE.Box3();m.traverse(o=>{if(o.isSkinnedMesh)box.expandByObject(o)});if(box.isEmpty())box.setFromObject(m);return{lo:box.min.y,hi:box.max.y}}
 const loadJS=src=>new Promise(res=>{const sc=document.createElement('script');sc.src=src;sc.onload=()=>res(true);sc.onerror=()=>res(false);document.head.appendChild(sc);setTimeout(()=>res(false),45000)});
-const skyP=loadJS('models/Sky.js'),natP=loadJS('models/Nature.js'),propP=loadJS('models/Props.js'),wildP=loadJS('models/Wilds.js');
+const skyP=loadJS('models/Sky.js'),natP=loadJS('models/Nature.js'),propP=loadJS('models/Props.js'),wildP=loadJS('models/Wilds.js'),idyP=loadJS('models/Idyllic.js');
 const monP=Promise.all([loadJS('models/Monsters.js'),loadJS('models/Animals.js')]).then(r=>r.some(Boolean));
 await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,30)));
 
@@ -496,12 +496,12 @@ function addTree(x,z,h,b){const big=b===4,s=big?1+SR()*1.1:.7+SR()*.8,tc=b===4?0
  addCol(x,z,.75*s);tAdd({x,z,h,s,rot,refs,kind:b===2?'sav':b===3?'swamp':'broad',id:TREES.length})}
 function addPine(x,z,h){const s=.8+SR()*.9,rot=SR()*6.28,refs=[];dummy.rotation.set(0,rot,0);dummy.position.set(x,h-.1,z);dummy.scale.set(s*.7,s*.5,s*.7);refs.push(put('trunk',0x5a3f2a));dummy.position.set(x,h+1.5*s,z);dummy.scale.setScalar(s);refs.push(put('pine',pickc(PINE)));addCol(x,z,.55*s);tAdd({x,z,h,s,rot,refs,kind:'pine',id:TREES.length})}
 for(let i=0;i<90000;i++){const x=(SR()-.5)*(WORLD-80),z=(SR()-.5)*(WORLD-80),w=weights(x,z),b=argmax(w);let pT=0,pP=0;for(let k=0;k<5;k++){pT+=w[k]*BIOMES[k].tree;pP+=w[k]*BIOMES[k].pine}const r=SR();if(r>pT+pP)continue;if(Math.hypot(x,z)<14||roadDist(x,z)<4.5||fireDist(x,z)<10||lairDist(x,z)<LAIR.r)continue;const h=heightAt(x,z);if(h<WL-.35||(h<WL+.1&&b!==3)||h>27)continue;if(r<pT)addTree(x,z,h,b);else addPine(x,z,h)}
-for(let i=0;i<26000;i++){const x=(SR()-.5)*(WORLD-60),z=(SR()-.5)*(WORLD-60),w=weights(x,z),b=argmax(w);let p=0;for(let k=0;k<5;k++)p+=w[k]*BIOMES[k].rock;if(SR()>p)continue;if(Math.hypot(x,z)<10||roadDist(x,z)<3.5||fireDist(x,z)<6||lairDist(x,z)<LAIR.r-6)continue;const h=heightAt(x,z);const s=b===1?.6+Math.pow(SR(),2)*3.6:.4+SR()*1.2;dummy.position.set(x,h+.12*s,z);dummy.rotation.set((SR()-.5)*.6,SR()*6.28,(SR()-.5)*.6);const fx_=.8+SR()*.5,fy_=.45+SR()*.35,fz_=.8+SR()*.5;dummy.scale.set(s*fx_,s*fy_,s*fz_);const rv='rock'+((SR()*3)|0);put(rv,b===3?0x5f6b4e:pickc(ROCKC));if(s>.7){const o=addRock(x,z,s*(fx_+fz_)*.45,h,h+.12*s+.88*s*fy_);o.m=dummy.matrix.clone();o.g=rv}}
+for(let i=0;i<26000;i++){const x=(SR()-.5)*(WORLD-60),z=(SR()-.5)*(WORLD-60),w=weights(x,z),b=argmax(w);let p=0;for(let k=0;k<5;k++)p+=w[k]*BIOMES[k].rock;if(SR()>p)continue;if(Math.hypot(x,z)<10||roadDist(x,z)<3.5||fireDist(x,z)<6||lairDist(x,z)<LAIR.r-6)continue;const h=heightAt(x,z);const s=b===1?.6+Math.pow(SR(),2)*3.6:.4+SR()*1.2;dummy.position.set(x,h+.12*s,z);dummy.rotation.set((SR()-.5)*.6,SR()*6.28,(SR()-.5)*.6);const fx_=.8+SR()*.5,fy_=.45+SR()*.35,fz_=.8+SR()*.5;dummy.scale.set(s*fx_,s*fy_,s*fz_);const rv='rock'+((SR()*6)|0);put(rv,b===3?0x5f6b4e:pickc(ROCKC));if(s>.7){const o=addRock(x,z,s*(fx_+fz_)*.45,h,h+.12*s+.88*s*fy_);o.m=dummy.matrix.clone();o.g=rv}}
 // bina InstancedMesh (dipanggil selepas model alam dimuat; batu guna model sebenar jika ada)
-const mm4=new THREE.Matrix4(),ZERO4=new THREE.Matrix4().makeScale(0,0,0),WHITE=new THREE.Color(0xffffff);
+const RVN=['I_Rock_Medium_01','I_Rock_Medium_02','I_Rock_Medium_03','I_Rock_Big_01','I_Rock_Big_02','I_Rock_Big_03'];const mm4=new THREE.Matrix4(),ZERO4=new THREE.Matrix4().makeScale(0,0,0),WHITE=new THREE.Color(0xffffff);
 function buildInstances(){const trunkG=new THREE.CylinderGeometry(.38,.65,5.5,7);trunkG.translate(0,2.75,0);const pineG=new THREE.ConeGeometry(2.3,6.5,7);pineG.translate(0,3.25,0);const dod=new THREE.DodecahedronGeometry(1,0);
  const flat=()=>new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,flatShading:true});const MT={trunk:flat(),crown:flat(),pine:flat()},G={trunk:trunkG,crown:new THREE.IcosahedronGeometry(2.7,0),pine:pineG};
- for(let v=0;v<3;v++){const r=NAT&&NAT['Rock_Medium_'+(v+1)];G['rock'+v]=r?r.rockGeo:dod;MT['rock'+v]=r?r.parts[0].mat:MT.rock0||flat()}ROCKGEO={rock0:G.rock0,rock1:G.rock1,rock2:G.rock2};
+ for(let v=0;v<6;v++){const r=NAT&&(NAT[RVN[v]]&&NAT[RVN[v]].rockGeo?NAT[RVN[v]]:NAT['Rock_Medium_'+(v%3+1)]);G['rock'+v]=r&&r.rockGeo?r.rockGeo:dod;MT['rock'+v]=r&&r.parts?r.parts[0].mat:MT.rock0||flat()}ROCKGEO={};for(let v=0;v<6;v++)ROCKGEO['rock'+v]=G['rock'+v];
  for(const b of buckets.values()){const n=b.c.length,im=new THREE.InstancedMesh(G[b.type],MT[b.type],n);const tex=b.type.startsWith('rock')&&NAT;for(let i=0;i<n;i++){mm4.fromArray(b.m,i*16);im.setMatrixAt(i,mm4);tmpC.setHex(b.c[i]);if(tex)tmpC.lerp(WHITE,.55);im.setColorAt(i,tmpC)}b.m=new Float32Array(b.m);b.c=null;im.computeBoundingSphere();im.castShadow=true;im.receiveShadow=b.type.startsWith('rock');b.im=im;scene.add(im)}}
 
 // ---- alam semula jadi: Quaternius Stylized Nature MegaKit ----
@@ -518,8 +518,32 @@ async function setupNature(){if(!await natP||!window.LHB_MODELS||!window.LHB_MOD
  try{const g=await new Promise((r,j)=>new GLTFLoader().parse(b64ToBuf(window.LHB_MODELS.Nature),'',r,j));delete window.LHB_MODELS.Nature;g.scene.updateMatrixWorld(true);NAT={};
   for(const node of g.scene.children){const parts=[];node.traverse(o=>{if(o.isMesh){const geo=o.geometry.clone();geo.applyMatrix4(o.matrixWorld);const m=o.material;if(m.alphaTest>0||m.transparent){m.side=THREE.DoubleSide;m.transparent=false;m.alphaTest=Math.max(m.alphaTest,.5)}m.metalness=0;m.roughness=1;parts.push({geo,mat:m})}});NAT[node.name]={parts}}
   const WK={Grass:.09,Leaves:.05,Flowers:.07,Leaves_NormalTree:.0035,Leaves_Pine:.0025,Leaves_TwistedTree:.002,Bark_NormalTree:.002,Bark_DeadTree:.0018,Bark_TwistedTree:.0012};for(const n in NAT){if(n.startsWith('Rock')||n.startsWith('Mushroom'))continue;for(const pt of NAT[n].parts){const k=WK[pt.mat.name];if(k)addWind(pt.mat,k)}}
-  for(let v=1;v<=3;v++){const r=NAT['Rock_Medium_'+v];if(!r)continue;const geo=r.parts[0].geo.clone();geo.computeBoundingBox();const bb=geo.boundingBox,c=bb.getCenter(new THREE.Vector3()),w=Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z);geo.translate(-c.x,-bb.min.y,-c.z);geo.scale(2/w,2/w,2/w);geo.translate(0,-.45,0);r.rockGeo=geo}}
+  for(let v=1;v<=3;v++){const r=NAT['Rock_Medium_'+v];if(!r)continue;const geo=r.parts[0].geo.clone();geo.computeBoundingBox();const bb=geo.boundingBox,c=bb.getCenter(new THREE.Vector3()),w=Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z);geo.translate(-c.x,-bb.min.y,-c.z);geo.scale(2/w,2/w,2/w);geo.translate(0,-.45,0);r.rockGeo=geo}
+  await addIdyllic()}
  catch(e){console.warn('Ralat model alam',e);NAT=null}}
+// ---- Idyllic Fantasy Nature (Edenity): pokok, batu, semak, bunga, tumbuhan air ----
+function rockNorm(r){const geo=r.parts[0].geo.clone();geo.computeBoundingBox();const bb=geo.boundingBox,c=bb.getCenter(new THREE.Vector3()),w=Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z);geo.translate(-c.x,-bb.min.y,-c.z);geo.scale(2/w,2/w,2/w);geo.translate(0,-.45,0);r.rockGeo=geo}
+async function addIdyllic(){if(!await idyP||!window.LHB_MODELS||!window.LHB_MODELS.Idyllic)return;
+ try{const g=await new Promise((r,j)=>new GLTFLoader().parse(b64ToBuf(window.LHB_MODELS.Idyllic),'',r,j));delete window.LHB_MODELS.Idyllic;g.scene.updateMatrixWorld(true);
+  const WKI=[[/^(Broadleaf|Fir|Willow)/,.0035],[/^Bush/,.02],[/^(Grass|Reeds|Plants|Plant_)/,.09],[/^Flower/,.06],[/^(Cattail|Waterlily)/,.05]];
+  for(const node of g.scene.children){const parts=[];node.traverse(o=>{if(o.isMesh){const geo=o.geometry.clone();geo.applyMatrix4(o.matrixWorld);const m=o.material;if(m.alphaTest>0){m.side=THREE.DoubleSide;m.transparent=false}m.metalness=0;m.roughness=1;
+    if(m.alphaTest>0){for(const[re,k]of WKI)if(re.test(node.name)){addWind(m,k);break}}parts.push({geo,mat:m})}});NAT['I_'+node.name]={parts}}
+  for(const n of RVN)if(NAT[n])rockNorm(NAT[n]);
+  const has=n=>!!NAT['I_'+n];
+  const pick=(pre,nn)=>Array.from({length:nn},(_,i)=>'I_'+pre+String(i+1).padStart(2,'0')).filter(n=>NAT[n]);
+  const bl=pick('BroadleafTree_',5),fi=pick('Fir_',5),wi=pick('WillowTree_',5);
+  if(bl.length){TREE_VAR.broad=bl.concat(bl.slice(0,4));for(const n of bl)TREE_SC[n]=1.05}
+  if(fi.length){TREE_VAR.pine=fi;for(const n of fi)TREE_SC[n]=1.12}
+  if(wi.length){TREE_VAR.swamp=wi.concat(['DeadTree_2']);for(const n of wi)TREE_SC[n]=1.0}
+  // penutup tanah & hiasan
+  const C=(n,s,w,m)=>{if(NAT['I_'+n])COVER.push(['I_'+n,s,w,m])},D=(n,s,w)=>{if(NAT['I_'+n])DECOR.push(['I_'+n,s,w])};
+  C('Grass',.9,[.7,.2,.5,.4,.3]);C('Plants',1,[.25,.04,.15,.3,.45]);
+  C('FlowerMeadow_Pink',3,[.08,0,.12,.02,.02]);C('FlowerMeadow_Blue',3,[.07,0,.1,.03,.04]);C('FlowerMeadow_Orange',3,[.06,0,.14,0,.03]);C('FlowerMeadow_White',3,[.07,0,.08,.04,.02]);C('FlowerMeadow_Purple',3,[.05,0,.04,.04,.06]);C('FlowerMeadow_OrangePinkRedPurpleBlue',3,[.06,0,.1,0,.04]);
+  C('Reeds',1.1,[.3,.1,.25,1.6,.6],'shore');C('Cattail_01',1,[.25,.05,.2,1.4,.5],'shore');C('Cattail_02',1,[.25,.05,.2,1.4,.5],'shore');C('Cattail_03',1,[.2,.05,.2,1.2,.4],'shore');
+  C('Waterlily_01',1.3,[.6,.2,.3,2.4,.8],'water');C('Waterlily_02',1.3,[.6,.2,.3,2.4,.8],'water');
+  D('Bush_01_01',.85,[.12,.02,.07,.1,.18]);D('Bush_01_02',.85,[.1,.02,.06,.1,.16]);D('Bush_02_01',.85,[.07,.01,.06,.04,.08]);D('Bush_02_02',.85,[.07,.01,.06,.04,.08]);D('Bush_03_01',.85,[.1,.02,.08,.1,.14]);D('Bush_03_02',.85,[.1,.02,.08,.1,.14]);
+  D('Flower_Red',1.4,[.06,0,.05,0,.02]);D('Flower_Yellow',1.4,[.06,0,.06,0,.02]);D('Flower_Blue_01',1.4,[.05,0,.04,.02,.04]);D('Flower_Pink',1.4,[.05,0,.04,0,.02]);D('Flower_White',1.4,[.05,0,.04,.02,.02]);
+ }catch(e){console.warn('Ralat Idyllic',e)}}
 const TREE_VAR={broad:['CommonTree_3','CommonTree_4','CommonTree_5'],pine:['Pine_2','Pine_4','Pine_5'],swamp:['DeadTree_2','DeadTree_3','CommonTree_5'],sav:['TwistedTree_1','TwistedTree_3']};
 const TREE_SC={CommonTree_3:1.05,CommonTree_4:1.05,CommonTree_5:1.35,Pine_2:1.2,Pine_4:.9,Pine_5:1.05,DeadTree_2:.85,DeadTree_3:.75,TwistedTree_1:.42,TwistedTree_3:.45};
 const NEAR_N=isTouch?70:150,NEAR_R=isTouch?80:110;let nearIM=null,nearSet=new Set(),ntx=1e9,ntz=1e9;
@@ -540,8 +564,8 @@ const CTINT=[0xffffff,0xd0d0c0,0xf2d890,0xc0cca8,0xa8c098].map(h=>new THREE.Colo
 const COVER_MAX=isTouch?1100:3000,COVER_R=isTouch?32:46,DECOR_MAX=isTouch?140:320,DECOR_R=isTouch?45:65;let coverIM=null,ccx=1e9,ccz=1e9;
 function scatter(list,cell,rad,cap,cnt,salt,hx,hz){const n=Math.ceil(rad/cell),c0=Math.floor(hx/cell),r0=Math.floor(hz/cell);let tot=0;
  for(let i=-n;i<=n&&tot<cap;i++)for(let j=-n;j<=n&&tot<cap;j++){if(i*i+j*j>n*n)continue;const ci=c0+i,cj=r0+j,x=(ci+hash(ci+salt,cj))*cell,z=(cj+hash(ci,cj-salt))*cell,b=biomeOf(x,z);let r=hash(ci-5+salt,cj+9),pick=null;
-  for(const e of list){r-=e[2][b]/list.length*(list===COVER?1.6:2.5);if(r<0){pick=e;break}}if(!pick)continue;const ims=coverIM[pick[0]];if(!ims)continue;const h=heightAt(x,z);if(h<WL+.05||h>24||roadDist(x,z)<2.6||fireDist(x,z)<3)continue;
-  const sc=pick[1]*(.75+hash(ci+3,cj+3+salt)*.6);dummy.position.set(x,h-.05,z);dummy.rotation.set(0,hash(ci,cj+5+salt)*6.28,0);dummy.scale.setScalar(sc);dummy.updateMatrix();const k=cnt[pick[0]]++;if(k>=cap){cnt[pick[0]]--;continue}for(const im of ims){im.setMatrixAt(k,dummy.matrix);if(list===COVER)im.setColorAt(k,CTINT[b])}tot++}}
+  for(const e of list){r-=e[2][b]/list.length*(list===COVER?1.6:2.5);if(r<0){pick=e;break}}if(!pick)continue;const ims=coverIM[pick[0]];if(!ims)continue;const h=heightAt(x,z),md=pick[3],bad=md==='water'?(h>WL-.12||h<WL-1.1):md==='shore'?(h<WL-.25||h>WL+.4):(h<WL+.05||h>24);if(bad||roadDist(x,z)<2.6||fireDist(x,z)<3)continue;
+  const sc=pick[1]*(.75+hash(ci+3,cj+3+salt)*.6);dummy.position.set(x,md==='water'?WL+.03:h-.05,z);dummy.rotation.set(0,hash(ci,cj+5+salt)*6.28,0);dummy.scale.setScalar(sc);dummy.updateMatrix();const k=cnt[pick[0]]++;if(k>=cap){cnt[pick[0]]--;continue}for(const im of ims){im.setMatrixAt(k,dummy.matrix);if(list===COVER)im.setColorAt(k,CTINT[b])}tot++}}
 function updateCover(force){const hx=hero.position.x,hz=hero.position.z;if(!force&&Math.hypot(hx-ccx,hz-ccz)<8)return;ccx=hx;ccz=hz;
  if(!coverIM){coverIM={};for(const[e]of COVER)coverIM[e]=makeIMs(e,COVER_MAX,false);for(const[e]of DECOR)coverIM[e]=makeIMs(e,DECOR_MAX,true)}
  const cnt={};for(const k in coverIM)cnt[k]=0;scatter(COVER,1.2,COVER_R,COVER_MAX,cnt,0,hx,hz);scatter(DECOR,5,DECOR_R,DECOR_MAX,cnt,41,hx,hz);
